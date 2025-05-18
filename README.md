@@ -12,7 +12,7 @@ This repository contains a set of Bash scripts, which are intended to be shared 
 Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage.  
 - The script reads `/proc/stat` directly to calculate CPU usage, ensuring low overhead.
 - Output is formatted for easy parsing by widgets or other scripts.
-- Optionally uses Awesome Font for visual enhancement, but works without it.
+- Uses Awesome Font for visual enhancement, but works without it.
 - If CPU usage exceeds 90%, the output is colored red to alert the user to high load.
 
 **Output:**  
@@ -22,6 +22,7 @@ Displays the current CPU usage percentage over a period of one second, designed 
 
 **Changelog:**  
 *No changes recorded yet.*
+
 ---
 
 ### `taskbar_memory_usage.sh`
@@ -33,7 +34,7 @@ Displays current memory usage and ZRAM swap usage in a lightweight and efficient
   - `click`: Toggles ZRAM swap on or off. If ZRAM is not active, it sets up and enables ZRAM swap; if already active, it disables and unloads the ZRAM module.
   - `startup`: Ensures ZRAM swap is enabled and configured at system startup.
 - Output is color-coded: memory usage is shown in red if above 5GB, and ZRAM usage is displayed or "OFF" if disabled.
-- Optionally uses Awesome Font for enhanced visual presentation, but works without it.
+- Uses Awesome Font for enhanced visual presentation, but works without it.
 - Minimal resource usage, suitable for frequent updates (e.g., every second).
 
 **Arguments:**  
@@ -58,7 +59,7 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Reads network statistics from `/proc/net/dev` to calculate current download and upload speeds.
 - Output is color-coded: speeds are shown in red if usage is high.
 - Shows the number of currently open TCP/UDP connections.
-- Optionally uses Awesome Font for enhanced visual presentation, but works without it.
+- Uses Awesome Font for enhanced visual presentation, but works without it.
 - On click (when the script is called with the `click` argument), displays a detailed list of all open network connections, grouped by process, including the number of connections per process and those without an associated process.
 - Waits for a keypress before exiting the detailed view, making it suitable for interactive widgets.
 
@@ -69,7 +70,7 @@ Displays real-time network speed (download and upload) and the number of open ne
   - Waits for a keypress before exiting.
 
 **Output:**  
-- Shows current download and upload speeds (e.g., `1.2 MB/s ↓  300 KB/s ↑`), color-coded by usage.
+- Shows current download and upload speeds (e.g., ` 1.2 MB/s    300 KB/s `), color-coded by usage.
 - Displays the number of open network connections.
 - When called with `click`, outputs a detailed, grouped list of open connections by process.
 
@@ -154,13 +155,11 @@ Enables running Waydroid under Xorg by automating the setup and teardown of the 
 - Useful for users running Xorg who want to use Waydroid without switching to a full Wayland session.
 - Requires `weston` compositor and Waydroid installed and configured.
 
-**Arguments:**  
-- No arguments required for basic toggle behavior.
-
 **Changelog:**  
 *No changes recorded yet.*
 
 ---
+
 
 ## Development Scripts
 
