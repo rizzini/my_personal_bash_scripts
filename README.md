@@ -4,6 +4,10 @@ This repository contains a set of Bash scripts, which are intended to be shared 
 
 ![](taskbar_screenshot.png)
 
+### `Important`
+
+It's worth mentioning that I haven't set up the bootstrapping for the scripts yet. Therefore, while the code itself can certainly be reused (if you know what you're doing), the scripts are not yet redistributable.
+
 ---
 
 ### `taskbar_cpu_usage.sh`
@@ -83,7 +87,6 @@ Displays real-time network speed (download and upload) and the number of open ne
 
 **Description:**  
 Monitors disk read and write speeds with high precision for all disks or a specific disk, designed for minimal resource usage and fast updates.  
-- Written in pure Bash, avoiding external tools and subshells for efficiency.
 - Reads disk statistics from `/proc/diskstats` to calculate real-time read and write speeds.
 - Can display stats for a specific disk (e.g., `sda`) or for all disks at once.
 - Supports both single-run and continuous monitoring modes (using the `loop` argument).
@@ -107,7 +110,7 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 - Designed for easy parsing by widgets or other scripts.
 
 **Changelog:**  
-- Fixed output using Awesome font when using "loop" argument
+- Updating the 'loop' argument output to also use the Awesome font.
 
 ---
 
@@ -115,7 +118,6 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 
 **Description:**  
 Controls screen brightness for both internal and external monitors, supporting both command-line and graphical (YAD slider) interfaces.  
-- Written in pure Bash for efficiency and minimal dependencies.
 - Supports two main backends:
   - **xrandr**: For internal displays and some external monitors, adjusts brightness via X server.
   - **ddcutil**: For external monitors supporting DDC/CI, communicates directly with the monitor hardware.
