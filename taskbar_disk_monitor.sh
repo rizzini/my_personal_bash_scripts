@@ -80,7 +80,7 @@ display_data() {
             else
                 value_write="${value_write}${unit_write}"
             fi
-            output+="${disk} -> Read: ${value_read} Write: ${value_write}   "
+            output+="${disk} -> 📄 ${value_read} | 📝 ${value_write} "
         done
     elif [ -n "$1" ]; then
         specified_disk="$1"
