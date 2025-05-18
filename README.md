@@ -9,7 +9,7 @@ This repository contains a set of Bash scripts, which are intended to be shared 
 ### `taskbar_cpu_usage.sh`
 
 **Description:**  
-Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage and fast updates.  
+Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage.  
 - Intended for use with the KDE Plasma Command Output widget, but can be used in any status bar or terminal.
 - The script reads `/proc/stat` directly to calculate CPU usage, ensuring low overhead.
 - Output is formatted for easy parsing by widgets or other scripts.
