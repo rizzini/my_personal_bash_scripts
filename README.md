@@ -10,7 +10,6 @@ This repository contains a set of Bash scripts, which are intended to be shared 
 
 **Description:**  
 Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage.  
-- Intended for use with the KDE Plasma Command Output widget, but can be used in any status bar or terminal.
 - The script reads `/proc/stat` directly to calculate CPU usage, ensuring low overhead.
 - Output is formatted for easy parsing by widgets or other scripts.
 - Optionally uses Awesome Font for visual enhancement, but works without it.
@@ -29,7 +28,7 @@ Displays the current CPU usage percentage over a period of one second, designed 
 
 **Description:**  
 Displays current memory usage and ZRAM swap usage in a lightweight and efficient way, ideal for status bars and widgets.  
-- Reads memory information directly from `/proc/meminfo` and ZRAM status from `/sys/block/zram0`.
+- Reads memory information from `/proc/meminfo` and ZRAM status from `/sys/block/zram0`.
 - Supports two main actions via arguments:  
   - `click`: Toggles ZRAM swap on or off. If ZRAM is not active, it sets up and enables ZRAM swap; if already active, it disables and unloads the ZRAM module.
   - `startup`: Ensures ZRAM swap is enabled and configured at system startup.
@@ -56,7 +55,7 @@ Displays current memory usage and ZRAM swap usage in a lightweight and efficient
 
 **Description:**  
 Displays real-time network speed (download and upload) and the number of open network connections, optimized for minimal resource usage and fast updates.  
-- Reads network statistics directly from `/proc/net/dev` to calculate current download and upload speeds.
+- Reads network statistics from `/proc/net/dev` to calculate current download and upload speeds.
 - Output is color-coded: speeds are shown in red if usage is high.
 - Shows the number of currently open TCP/UDP connections.
 - Optionally uses Awesome Font for enhanced visual presentation, but works without it.
@@ -84,7 +83,7 @@ Displays real-time network speed (download and upload) and the number of open ne
 **Description:**  
 Monitors disk read and write speeds with high precision for all disks or a specific disk, designed for minimal resource usage and fast updates.  
 - Written in pure Bash, avoiding external tools and subshells for efficiency.
-- Reads disk statistics directly from `/proc/diskstats` to calculate real-time read and write speeds.
+- Reads disk statistics from `/proc/diskstats` to calculate real-time read and write speeds.
 - Can display stats for a specific disk (e.g., `sda`) or for all disks at once.
 - Supports both single-run and continuous monitoring modes (using the `loop` argument).
 - Output is color-coded: speeds are shown in red if high activity is detected (above 20MB/s).
