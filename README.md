@@ -6,7 +6,51 @@ This repository contains a set of Bash scripts, which are intended to be shared 
 
 ### `Important`
 
-It's worth mentioning that I haven't set up the bootstrapping for the scripts yet. Therefore, while the code itself can certainly be reused (if you know what you're doing), the scripts are not yet redistributable.
+It's worth mentioning that I haven't set up the bootstrapping for the scripts yet. Therefore, while the code itself can certainly be reused (if you know what you're doing), the scripts are not yet redistributable, unless you can adapt them to your environment yourself.
+
+---
+
+### `waydroid_under_xorg.sh`
+
+**Description:**  
+Enables running Waydroid under Xorg by automating the setup and teardown of the required Weston compositor session.  
+- Designed to toggle Waydroid on and off: run once to launch Waydroid in a Weston window, run again to close everything cleanly.
+- Handles starting and stopping both the Waydroid container and the Weston compositor.
+- Detects if Waydroid or Weston is already running and acts accordingly to avoid duplicate sessions.
+- Can be safely used from the terminal or integrated into desktop widgets and launchers.
+- If the Weston window is closed manually, the script ensures Waydroid processes are also stopped.
+- Useful for users running Xorg who want to use Waydroid without switching to a full Wayland session.
+- Requires `weston` compositor and Waydroid installed and configured.
+
+**Changelog:**  
+*No changes recorded yet.*
+
+---
+
+### `taskbar_network_speed_monitor.sh`
+
+**Description:**  
+Displays real-time network speed (download and upload) and the number of open network connections, optimized for minimal resource usage and fast updates.  
+- Reads network statistics from `/proc/net/dev` to calculate current download and upload speeds.
+- Output is color-coded: speeds are shown in red if usage is high.
+- Shows the number of currently open TCP/UDP connections.
+- Uses Awesome Font for enhanced visual presentation, but works without it.
+- On click (when the script is called with the `click` argument), displays a detailed list of all open network connections, grouped by process, including the number of connections per process and those without an associated process.
+- Waits for a keypress before exiting the detailed view, making it suitable for interactive widgets.
+
+**Arguments:**  
+- `click`:  
+  - Lists all open TCP/UDP connections, grouped by process.
+  - Shows the number of connections per process and those without an associated process.
+  - Waits for a keypress before exiting.
+
+**Output:**  
+- Shows current download and upload speeds (e.g., ` 1.2 MB/s    300 KB/s `), color-coded by usage.
+- Displays the number of open network connections.
+- When called with `click`, outputs a detailed, grouped list of open connections by process.
+
+**Changelog:**  
+- 
 
 ---
 
@@ -56,33 +100,6 @@ Displays current memory usage and ZRAM swap usage in a lightweight and efficient
 
 ---
 
-### `taskbar_network_speed_monitor.sh`
-
-**Description:**  
-Displays real-time network speed (download and upload) and the number of open network connections, optimized for minimal resource usage and fast updates.  
-- Reads network statistics from `/proc/net/dev` to calculate current download and upload speeds.
-- Output is color-coded: speeds are shown in red if usage is high.
-- Shows the number of currently open TCP/UDP connections.
-- Uses Awesome Font for enhanced visual presentation, but works without it.
-- On click (when the script is called with the `click` argument), displays a detailed list of all open network connections, grouped by process, including the number of connections per process and those without an associated process.
-- Waits for a keypress before exiting the detailed view, making it suitable for interactive widgets.
-
-**Arguments:**  
-- `click`:  
-  - Lists all open TCP/UDP connections, grouped by process.
-  - Shows the number of connections per process and those without an associated process.
-  - Waits for a keypress before exiting.
-
-**Output:**  
-- Shows current download and upload speeds (e.g., ` 1.2 MB/s    300 KB/s `), color-coded by usage.
-- Displays the number of open network connections.
-- When called with `click`, outputs a detailed, grouped list of open connections by process.
-
-**Changelog:**  
-*No changes recorded yet.*
-
----
-
 ### `taskbar_disk_monitor.sh`
 
 **Description:**  
@@ -110,7 +127,7 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 - Designed for easy parsing by widgets or other scripts.
 
 **Changelog:**  
-- Updating the 'loop' argument output to also use the Awesome font.
+- Updated the 'loop' argument output to also use the Awesome font.
 
 ---
 
@@ -139,23 +156,6 @@ Controls screen brightness for both internal and external monitors, supporting b
 - Shows the current brightness value for the selected monitor and method.
 - Allows interactive adjustment via GUI or command line.
 - Prints confirmation messages or errors if an operation fails.
-
-**Changelog:**  
-*No changes recorded yet.*
-
----
-
-### `waydroid_under_xorg.sh`
-
-**Description:**  
-Enables running Waydroid under Xorg by automating the setup and teardown of the required Weston compositor session.  
-- Designed to toggle Waydroid on and off: run once to launch Waydroid in a Weston window, run again to close everything cleanly.
-- Handles starting and stopping both the Waydroid container and the Weston compositor.
-- Detects if Waydroid or Weston is already running and acts accordingly to avoid duplicate sessions.
-- Can be safely used from the terminal or integrated into desktop widgets and launchers.
-- If the Weston window is closed manually, the script ensures Waydroid processes are also stopped.
-- Useful for users running Xorg who want to use Waydroid without switching to a full Wayland session.
-- Requires `weston` compositor and Waydroid installed and configured.
 
 **Changelog:**  
 *No changes recorded yet.*
