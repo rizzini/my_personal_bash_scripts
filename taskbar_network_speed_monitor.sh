@@ -1,0 +1,99 @@
+#!/bin/bash
+unit_mode=2
+if [[ "$1" == "click" ]]; then
+    connections=$(ss -tunp 2>/dev/null)
+    IFS=$'\n' read -rd '' -a lines <<< "$connections"
+    unset 'lines[0]'
+    echo "Number of open connections per process:"
+    declare -A process_counter
+    declare -A process_names
+    no_process=0
+    for line in "${lines[@]}"; do
+        if [[ "$line" == *"users:"* ]]; then
+            pid="${line##*pid=}"
+            pid="${pid%%,*}"
+            ((process_counter[$pid]++))
+            if [[ -z "${process_names[$pid]}" ]]; then
+                process_names[$pid]=$(ps -p "$pid" -o comm= 2>/dev/null || echo "Unknown")
+            fi
+        else
+            ((no_process++))
+        fi
+    done
+    for pid in "${!process_counter[@]}"; do
+        echo "${process_counter[$pid]} ${process_names[$pid]}"
+    done | sort -nr
+    echo -e "\nConnections without associated process: $no_process"
+    echo -e "\nPress any key to exit."
+    read -n 1 -s key
+    echo -e "\nExiting..."
+    exit 0
+fi
+get_data() {
+    local iface="$1"
+    local line rx tx
+    while IFS=: read -r dev data; do
+        dev="${dev%% *}"
+        if [[ "$dev" == "$iface" ]]; then
+            IFS=' ' read -ra fields <<< "$data"
+            rx="${fields[0]}"
+            tx="${fields[8]}"
+            echo "$rx $tx"
+            return
+        fi
+    done < /proc/net/dev
+}
+IFS=' ' read -r rx1 tx1 <<< "$(get_data 'enp1s0')"
+sleep 1
+IFS=' ' read -r rx2 tx2 <<< "$(get_data 'enp1s0')"
+rx_original=$((rx2 - rx1))
+tx_original=$((tx2 - tx1))
+convert_units() {
+    local bytes=$1
+    if [[ "$unit_mode" -eq 1 ]]; then
+        awk "BEGIN { printf \"%.2fKB/s\", $bytes/1024 }"
+    elif [[ "$unit_mode" -eq 2 ]]; then
+        awk "BEGIN { printf \"%.2fMB/s\", $bytes/1024/1024 }"
+    else
+        # Automático
+        if (( bytes < 1024*1024 )); then
+            awk "BEGIN { printf \"%.2fKB/s\", $bytes/1024 }"
+        else
+            awk "BEGIN { printf \"%.2fMB/s\", $bytes/1024/1024 }"
+        fi
+    fi
+}
+colorize_speed() {
+    local speed_str="$1"
+    local color_reset="\e[0m"
+    local color_green="\e[92m"
+    local color_yellow="\e[93m"
+    local color_red="\e[91m"
+    local value
+    value=$(echo "$speed_str" | awk -F'MB/s' '{print $1}')
+    value=$(echo "$value" | tr ',' '.' | xargs)
+    if (( $(echo "$value >= 2 && $value <= 10" | bc -l) )); then
+        echo -e "${color_green}${speed_str}${color_reset}"
+    elif (( $(echo "$value >= 11 && $value <= 30" | bc -l) )); then
+        echo -e "${color_yellow}${speed_str}${color_reset}"
+    elif (( $(echo "$value > 30" | bc -l) )); then
+        echo -e "${color_red}${speed_str}${color_reset}"
+    else
+        echo "$speed_str"
+    fi
+}
+rx_converted=$(convert_units "$rx_original")
+tx_converted=$(convert_units "$tx_original")
+if [[ "$unit_mode" -eq 2 || "$unit_mode" -eq 3 ]]; then
+    if [[ "$rx_converted" == *"MB/s" ]]; then
+        rx_converted=$(colorize_speed "$rx_converted")
+    fi
+    if [[ "$tx_converted" == *"MB/s" ]]; then
+        tx_converted=$(colorize_speed "$tx_converted")
+    fi
+fi
+con_counter=0
+while IFS= read -r line; do
+    ((con_counter++))
+done < <(ss -tun 2>/dev/null | tail -n +2)
+echo -e " $rx_converted |  $tx_converted |  $con_counter"
