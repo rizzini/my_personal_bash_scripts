@@ -30,27 +30,29 @@ Enables running Waydroid under Xorg by automating the setup and teardown of the 
 ### `taskbar_network_speed_monitor.sh`
 
 **Description:**  
-Displays real-time network speed (download and upload) and the number of open network connections, optimized for minimal resource usage and fast updates.  
-- Reads network statistics from `/proc/net/dev` to calculate current download and upload speeds.
-- Output is color-coded: speeds are shown in red if usage is high.
-- Shows the number of currently open TCP/UDP connections.
-- Uses Awesome Font for enhanced visual presentation, but works without it.
-- On click (when the script is called with the `click` argument), displays a detailed list of all open network connections, grouped by process, including the number of connections per process and those without an associated process.
-- Waits for a keypress before exiting the detailed view, making it suitable for interactive widgets.
+Displays real-time network speed (download and upload) and the number of open network connections, optimized for minimal resource usage.  
+- Reads network statistics directly from `/proc/net/dev` to calculate current download and upload speeds for a specified network interface (by default, `enp1s0`; you can edit the script to change this).
+- Calculates speed by measuring the difference in bytes sent/received over a 1-second interval.
+- Supports three unit display modes (KB/s, MB/s, or automatic selection based on speed), configurable via the `unit_mode` variable in the script at the beginning.
+- The output is color-coded, regardless of the display mode you choose:  
+  - **Green:** 2–10 MB/s  
+  - **Yellow:** 11–30 MB/s  
+  - **Red:** above 30 MB/s  
+  This helps to quickly identify high network usage.
+- Shows the current number of open TCP/UDP connections using the `ss` command.
+- Uses Awesome Font icons for download (``), upload (``), and connection count (``) for enhanced visual presentation, but works without them.
 
 **Arguments:**  
 - `click`:  
-  - Lists all open TCP/UDP connections, grouped by process.
-  - Shows the number of connections per process and those without an associated process.
-  - Waits for a keypress before exiting.
+  - Shows a detailed list of all open TCP/UDP connections, grouped by process.
+  - Displays the number of connections per process and the count of connections without an associated process.
+  - Waits for a keypress before exiting the detailed view.
 
-**Output:**  
-- Shows current download and upload speeds (e.g., ` 1.2 MB/s    300 KB/s `), color-coded by usage.
-- Displays the number of open network connections.
-- When called with `click`, outputs a detailed, grouped list of open connections by process.
-
-**Changelog:**  
-- 
+  **Changelog:**  
+- Refactored unit conversion logic: added `unit_mode` variable to allow switching between KB/s(`unit_mode=1`), MB/s(`unit_mode=2`), or automatic(`unit_mode=3`) unit selection depending on the speed.
+- Improved output formatting: now uses `awk` for precise floating-point formatting of speeds.
+- Added `colorize_speed` function for more accurate and flexible color-coding of MB/s speeds (green for 2–10 MB/s, yellow for 11–30 MB/s, red for above 30 MB/s)(it'll be soon replaced to a pure-bash soluton).
+- Minor code cleanup and improved comments.
 
 ---
 
