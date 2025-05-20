@@ -40,7 +40,6 @@ Displays real-time network speed (download and upload) and the number of open ne
   - **Red:** above 30 MB/s  
   This helps to quickly identify high network usage.
 - Shows the current number of open TCP/UDP connections using the `ss` command.
-- Uses Awesome Font icons for download (``), upload (``), and connection count (``) for enhanced visual presentation, but works without them.
 
 **Arguments:**  
 - `click`:  
