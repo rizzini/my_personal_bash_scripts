@@ -1,4 +1,5 @@
 #!/bin/bash
+interface="enp1s0"
 unit_mode=2
 if [[ "$1" == "click" ]]; then
     connections=$(ss -tunp 2>/dev/null)
@@ -43,25 +44,43 @@ get_data() {
         fi
     done < /proc/net/dev
 }
-IFS=' ' read -r rx1 tx1 <<< "$(get_data 'enp1s0')"
+IFS=' ' read -r rx1 tx1 <<< "$(get_data "$interface")"
 sleep 1
-IFS=' ' read -r rx2 tx2 <<< "$(get_data 'enp1s0')"
+IFS=' ' read -r rx2 tx2 <<< "$(get_data "$interface")"
 rx_original=$((rx2 - rx1))
 tx_original=$((tx2 - tx1))
 convert_units() {
     local bytes=$1
-    if [[ "$unit_mode" -eq 1 ]]; then
-        awk "BEGIN { printf \"%.2fKB/s\", $bytes/1024 }"
-    elif [[ "$unit_mode" -eq 2 ]]; then
-        awk "BEGIN { printf \"%.2fMB/s\", $bytes/1024/1024 }"
-    else
-        # Automático
-        if (( bytes < 1024*1024 )); then
-            awk "BEGIN { printf \"%.2fKB/s\", $bytes/1024 }"
-        else
-            awk "BEGIN { printf \"%.2fMB/s\", $bytes/1024/1024 }"
-        fi
-    fi
+    local value unit
+    case "$unit_mode" in
+        1)
+            value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024 }")
+            unit="KB/s"
+            ;;
+        2)
+            value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024/1024 }")
+            unit="MB/s"
+            ;;
+        3)
+            if (( bytes >= 1024*1024 )); then
+                value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024/1024 }")
+                unit="MB/s"
+            else
+                value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024 }")
+                unit="KB/s"
+            fi
+            ;;
+        *)
+            if (( bytes >= 1024*1024 )); then
+                value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024/1024 }")
+                unit="MB/s"
+            else
+                value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024 }")
+                unit="KB/s"
+            fi
+            ;;
+    esac
+    echo "${value}${unit}"
 }
 colorize_speed() {
     local speed_str="$1"
