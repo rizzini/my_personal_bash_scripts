@@ -6,7 +6,7 @@ This repository contains a set of Bash scripts, which are intended to be shared 
 
 ### `Important`
 
-It's worth mentioning that I haven't set up the bootstrapping for the scripts yet. Therefore, while the code itself can certainly be reused (if you know what you're doing), the scripts are not yet redistributable, unless you can adapt them to your environment yourself.
+It's worth mentioning that I haven't set up the bootstrapping for the scripts yet. Therefore, while the code itself can certainly be reused (if you know what you're doing), the scripts are not yet redistributable.
 
 ---
 
@@ -50,8 +50,7 @@ Displays real-time network speed (download and upload) and the number of open ne
 
   **Changelog:**  
 - Refactored unit conversion logic: added `unit_mode` variable to allow switching between KB/s(`unit_mode=1`), MB/s(`unit_mode=2`), or automatic(`unit_mode=3`) unit selection depending on the speed. (19/05/2025)
-- Improved output formatting: now uses `awk` for precise floating-point formatting of speeds. (19/05/2025)
-- Added `colorize_speed` function for more accurate and flexible color-coding of speeds (green for 2–10 MB/s, yellow for 11–30 MB/s, red for above 30 MB/s)(it'll be soon replaced to a pure-bash soluton). (19/05/2025)
+- Added `colorize_speed` function for more accurate and flexible color-coding of speeds, no matter the unit mode mode, (green for 2–10 MB/s, yellow for 11–30 MB/s, red for above 30 MB/s) (19/05/2025)
 
 ---
 
