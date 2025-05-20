@@ -34,7 +34,7 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Reads network statistics directly from `/proc/net/dev` to calculate current download and upload speeds for a specified network interface (by default, `enp1s0`; you can edit the script to change this).
 - Calculates speed by measuring the difference in bytes sent/received over a 1-second interval.
 - Supports three unit display modes (KB/s, MB/s, or automatic selection based on speed), configurable via the `unit_mode` variable in the script at the beginning.
-- The output is color-coded, regardless of the display mode you choose:  
+- The output is color-coded, regardless of the display mode you choose(In the near future, I'll make this dynamic depending on your conection):  
   - **Green:** 2–10 MB/s  
   - **Yellow:** 11–30 MB/s  
   - **Red:** above 30 MB/s  
@@ -49,10 +49,9 @@ Displays real-time network speed (download and upload) and the number of open ne
   - Waits for a keypress before exiting the detailed view.
 
   **Changelog:**  
-- Refactored unit conversion logic: added `unit_mode` variable to allow switching between KB/s(`unit_mode=1`), MB/s(`unit_mode=2`), or automatic(`unit_mode=3`) unit selection depending on the speed.
-- Improved output formatting: now uses `awk` for precise floating-point formatting of speeds.
-- Added `colorize_speed` function for more accurate and flexible color-coding of MB/s speeds (green for 2–10 MB/s, yellow for 11–30 MB/s, red for above 30 MB/s)(it'll be soon replaced to a pure-bash soluton).
-- Minor code cleanup and improved comments.
+- Refactored unit conversion logic: added `unit_mode` variable to allow switching between KB/s(`unit_mode=1`), MB/s(`unit_mode=2`), or automatic(`unit_mode=3`) unit selection depending on the speed. (19/05/2025)
+- Improved output formatting: now uses `awk` for precise floating-point formatting of speeds. (19/05/2025)
+- Added `colorize_speed` function for more accurate and flexible color-coding of speeds (green for 2–10 MB/s, yellow for 11–30 MB/s, red for above 30 MB/s)(it'll be soon replaced to a pure-bash soluton). (19/05/2025)
 
 ---
 
@@ -109,6 +108,7 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 - Reads disk statistics from `/proc/diskstats` to calculate real-time read and write speeds.
 - Can display stats for a specific disk (e.g., `sda`) or for all disks at once.
 - Supports both single-run and continuous monitoring modes (using the `loop` argument).
+- Supports three unit display modes (KB/s, MB/s, or automatic selection based on speed), configurable via the `unit_mode` variable in the script at the beginning.
 - Output is color-coded: speeds are shown in red if high activity is detected (above 20MB/s).
 - Allows customization of the update interval when running in loop mode.
 
@@ -129,7 +129,8 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 - Designed for easy parsing by widgets or other scripts.
 
 **Changelog:**  
-- Updated the 'loop' argument output to also use the Awesome font.
+- Updated the 'loop' argument output to also use the Awesome font. (18/05/2025)
+- Refactored unit conversion logic: added `unit_mode` variable to allow switching between KB/s(`unit_mode=1`), MB/s(`unit_mode=2`), or automatic(`unit_mode=3`) unit selection depending on the speed. (19/05/2025)
 
 ---
 
