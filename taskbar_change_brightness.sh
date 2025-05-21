@@ -15,8 +15,11 @@ control_brightness() {
     local min_value max_value scale_factor
     if [[ "$tool" == "xrandr" ]]; then
         current_brightness=${initial_brightness:-$(xrandr --verbose | grep -i brightness | head -n1 | awk '{print $2}')}
-        current_brightness=$(printf "%.0f" "$(LC_NUMERIC=C echo "$current_brightness * 100" | bc)")
-        min_value=20
+        if [[ -z "$current_brightness" ]]; then
+            current_brightness=1.0
+        fi
+        current_brightness=$(LC_NUMERIC=C echo "$current_brightness * 100" | bc | awk '{printf "%d", $1}')
+        min_value=20 # avoid the screen to be too dark that you can't easily revert..
         max_value=100
         scale_factor=100
     elif [[ "$tool" == "ddcutil" ]]; then
@@ -52,14 +55,15 @@ control_brightness() {
     if [[ $? -eq 0 ]]; then
         if [[ "$tool" == "xrandr" ]]; then
             current_brightness=$(xrandr --verbose | grep -i brightness | head -n1 | awk '{print $2}')
-            current_brightness=$(printf "%.0f" "$(LC_NUMERIC=C echo "$current_brightness * 100" | bc)")
-            "$0" choose_ddcutil "$current_brightness"
+            ddcutil_brightness=$(LC_NUMERIC=C echo "$current_brightness * 100" | bc | awk '{printf "%d", $1}')
+            "$0" choose_ddcutil "$ddcutil_brightness"
         else
             current_brightness=$(ddcutil getvcp 0x10 | awk '{print $9}' | tr -cd '[:digit:]')
             if [[ -z "$current_brightness" ]]; then
                 current_brightness=100
             fi
-            "$0" choose_xrandr "$current_brightness"
+            xrandr_brightness=$(LC_NUMERIC=C echo "scale=2; $current_brightness / 100" | bc)
+            "$0" choose_xrandr "$xrandr_brightness"
         fi
     fi
     rm -f "$fifo_path" "/tmp/yad_idle_reset_$tool"
