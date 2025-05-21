@@ -154,8 +154,8 @@ case $1 in
             "$0" choose_ddcutil "$2"
             exit 0
         fi
-        pkill -f "$0 choose_ddcutil" 2>/dev/null
-        pkill yad
+        pkill -9 -f "$0 choose_ddcutil" 2>/dev/null
+        pkill -9 yad
         control_brightness "xrandr" "$2"
         ;;
     'choose_ddcutil')
@@ -164,8 +164,8 @@ case $1 in
             "$0" choose_xrandr "$2"
             exit 0
         fi
-        pkill -f "$0 choose_xrandr" 2>/dev/null
-        pkill yad
+        pkill -9 -f "$0 choose_xrandr" 2>/dev/null
+        pkill -9 yad
         control_brightness "ddcutil" "$2"
         ;;
 esac
