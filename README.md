@@ -162,6 +162,6 @@ Controls screen brightness for both internal and external monitors, supporting b
 - Prints confirmation messages or errors if an operation fails.
 
 **Changelog:**  
-*No changes recorded yet.*
+- Now uses SIGKILL (-9) to forcefully terminate previous yad/script instances when switching modes, helping to prevent possible infinite loops from unresponsive processes. (21/05/2025)
 
 ---
