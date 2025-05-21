@@ -155,21 +155,21 @@ case $1 in
     'choose_xrandr')
         if pgrep -f "$0 choose_xrandr" | grep -v $$ > /dev/null; then
             echo "Switching to 'choose_ddcutil'."
-            "$0" choose_ddcutil "$2"
+            "$0" choose_ddcutil
             exit 0
         fi
         pkill -9 -f "$0 choose_ddcutil" 2>/dev/null
         pkill -9 yad
-        control_brightness "xrandr" "$2"
+        control_brightness "xrandr"
         ;;
     'choose_ddcutil')
         if pgrep -f "$0 choose_ddcutil" | grep -v $$ > /dev/null; then
             echo "Switching to 'choose_xrandr'."
-            "$0" choose_xrandr "$2"
+            "$0" choose_xrandr
             exit 0
         fi
         pkill -9 -f "$0 choose_xrandr" 2>/dev/null
         pkill -9 yad
-        control_brightness "ddcutil" "$2"
+        control_brightness "ddcutil"
         ;;
 esac
