@@ -162,6 +162,13 @@ Controls screen brightness for both internal and external monitors, supporting b
 - Prints confirmation messages or errors if an operation fails.
 
 **Changelog:**  
-- Now uses SIGKILL (-9) to forcefully terminate previous yad/script instances when switching modes, helping to prevent possible infinite loops from unresponsive processes. (21/05/2025)
-
+- Identified possible infinite loop from unresponsive YAD processes. The script now uses SIGKILL (-9) to forcefully terminate previous yad/script instances when switching modes to prevent this. (21/05/2025)
+- Improved brightness value conversion between xrandr (0.1–1.0) and ddcutil (0–100) modes. (21/05/2025)
+- Fixed bug where switching between xrandr and ddcutil using the Switch button could result in "Initial value greater than maximum" errors in YAD. (21/05/2025)
+- Now, when switching modes, the initial brightness value is always converted to the correct scale for the selected tool. (21/05/2025)
+- Enhanced robustness by ensuring default values are set if brightness cannot be retrieved. (21/05/2025)
+- Minor code cleanup and improved comments for maintainability. (21/05/2025)
 ---
+
+
+
