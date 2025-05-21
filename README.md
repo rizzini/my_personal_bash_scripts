@@ -168,6 +168,7 @@ Controls screen brightness for both internal and external monitors, supporting b
 - Now, when switching modes, the initial brightness value is always converted to the correct scale for the selected tool. (21/05/2025)
 - Enhanced robustness by ensuring default values are set if brightness cannot be retrieved. (21/05/2025)
 - Minor code cleanup and improved comments for maintainability. (21/05/2025)
+- When switching modes, the brightness value from the previous tool, whether xrandr or ddcutil, was being carried over, which shouldn't happen. Both tools have their own independent brightness systems. (21/05/2025)
 ---
 
 
