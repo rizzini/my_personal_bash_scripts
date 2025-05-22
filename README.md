@@ -1,5 +1,5 @@
-All monitoring scripts, those starting with taskbar_*, are performance-sensitive, meaning they're designed to use minimal hardware resources. From time to time, I'll tweak the scripts to make them consume less and less resourcess as posssible. 
-I've started using Awesome Font to add a bit of simple styling, but I'm not sure yet whether I'll keep it this way. I'm not good at that. If you are, feel free to pich in! They are written in pure Bash, avoiding external tools and subshells as much as possible. I use them with the Command Output Plasma KDE widget, which I'll better explain it how I do it later this week in this README.  
+All monitoring scripts, those starting with taskbar_*, are performance-sensitive, meaning they're designed to use minimal hardware resources. From time to time, I'll tweak the scripts to make them consume less and less resources as possible. 
+I've started using Awesome Font to add a bit of simple styling, but I'm not sure yet whether I'll keep it this way. I'm not good at that. If you are, feel free to pitch in! They are written in pure Bash, avoiding external tools and subshells as much as possible. I use them with the Command Output Plasma KDE widget, which I'll better explain it how I do it later this week in this README.  
 
 This repository contains a set of Bash scripts, which are intended to be shared more as an engine than as a final, styled solution, for system monitoring and hardware control on Linux. Below you will find a detailed description of each script, including all arguments and their functions. 
 
@@ -35,7 +35,7 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Reads network statistics directly from `/proc/net/dev` to calculate current download and upload speeds for a specified network interface (by default, `enp1s0`; you can edit the script to change this).
 - Calculates speed by measuring the difference in bytes sent/received over a 1-second interval.
 - Supports three unit display modes (KB/s, MB/s, or automatic selection based on speed), configurable via the `unit_mode` variable in the script at the beginning.
-- The output is color-coded, regardless of the display mode you choose(In the near future, I'll make this dynamic depending on your conection):  
+- The output is color-coded, regardless of the display mode you choose(In the near future, I'll make this dynamic depending on your connection):  
   - **Green:** 2–10 MB/s  
   - **Yellow:** 11–30 MB/s  
   - **Red:** above 30 MB/s  
@@ -171,8 +171,8 @@ Controls screen brightness for both internal and external monitors, supporting b
 - Minor code cleanup and improved comments for maintainability. (21/05/2025)
 - When switching modes, the brightness value from the previous tool, whether xrandr or ddcutil, was being carried over, which shouldn't happen. Both tools have their own independent brightness systems. (21/05/2025)
 - Added the option to turn off monitor on both xrandr and ddcutil interfaces. (22/05/2025)
-- Some coding improvement for redeability and maintainability .(22/05/2025)
-- Removed the feature where the YAD interface closes automatically after a short period. This is not a good idea on slow systems, as YAD can take some time to load, and this feature could result in no interface being shown at all.
+- Some coding improvement for readability and maintainability. (22/05/2025)
+- Removed the feature where the YAD interface closes automatically after a short period. This is not a good idea on slow systems, as YAD can take some time to load, and this feature could result in no interface being shown at all. (22/05/2025)
 ---
 
 
