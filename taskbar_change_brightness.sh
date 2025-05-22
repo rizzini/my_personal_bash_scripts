@@ -14,7 +14,7 @@ control_brightness() {
     local current_brightness
     local min_value max_value scale_factor
     local off_btn=102
-    local sw_btn=0
+    local sw_btn=101
     if [[ "$tool" == "xrandr" ]]; then
         current_brightness=${initial_brightness:-$(xrandr --verbose | grep -i brightness | head -n1 | awk '{print $2}')}
         if [[ -z "$current_brightness" ]]; then
@@ -39,17 +39,10 @@ control_brightness() {
     [ -p "$fifo_path" ] || mkfifo "$fifo_path"
     yad --scale --vertical --width=100 --close-on-unfocus --step=5 --on-top --height=250 --value="$current_brightness" \
         --min-value="$min_value" --max-value="$max_value" --text="$tool" --text-align=center --print-partial \
-        --button="Switch:0" --button="Off:102" > "$fifo_path" &
+        --button="Switch:101" --button="Off:102" > "$fifo_path" &
     yad_pid=$!
     {
         while read -r input; do
-            if [[ "$input" == "$off_btn" ]]; then
-                ddcutil setvcp D6 04
-                break
-            fi
-            if [[ "$input" == "$sw_btn" ]]; then
-                break
-            fi
             echo "reset" > "/tmp/yad_idle_reset_$tool"
             if [[ "$tool" == "xrandr" ]]; then
                 input=$(LC_NUMERIC=C echo "$input / $scale_factor" | bc -l | awk '{printf "%.1f", $0}')
@@ -60,7 +53,8 @@ control_brightness() {
         done < "$fifo_path"
     } &
     wait "$yad_pid"
-    if [[ $? -eq 0 ]]; then
+    exit_code=$?
+    if [[ "$exit_code" -eq 0 ]]; then
         if [[ "$tool" == "xrandr" ]]; then
             current_brightness=$(xrandr --verbose | grep -i brightness | head -n1 | awk '{print $2}')
             ddcutil_brightness=$(LC_NUMERIC=C echo "$current_brightness * 100" | bc | awk '{printf "%d", $1}')
@@ -73,8 +67,16 @@ control_brightness() {
             xrandr_brightness=$(LC_NUMERIC=C echo "scale=2; $current_brightness / 100" | bc)
             "$0" choose_xrandr "$xrandr_brightness"
         fi
+    elif  [[ "$exit_code" -eq "$off_btn" ]]; then
+        ddcutil setvcp D6 04;
+    elif [[ "$exit_code" -eq "$sw_btn" ]]; then
+        if [[ "$tool" == "xrandr" ]]; then
+            control_brightness "ddcutil"
+        else
+            control_brightness "xrandr"
+        fi
+        return
     fi
-    rm -f "$fifo_path" "/tmp/yad_idle_reset_$tool"
 }
 validate_brightness() {
     local value=$1
