@@ -172,6 +172,7 @@ Controls screen brightness for both internal and external monitors, supporting b
 - When switching modes, the brightness value from the previous tool, whether xrandr or ddcutil, was being carried over, which shouldn't happen. Both tools have their own independent brightness systems. (21/05/2025)
 - Added the option to turn off monitor on both xrandr and ddcutil interfaces. (22/05/2025)
 - Some coding improvement for redeability and maintainability .(22/05/2025)
+- Removed the feature where the YAD interface closes automatically after a short period. This is not a good idea on slow systems, as YAD can take some time to load, and this feature could result in no interface being shown at all.
 ---
 
 
