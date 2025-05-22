@@ -5,7 +5,7 @@ set_brightness_ddcutil() {
 }
 set_brightness_xrandr() {
     local brightness=$1
-    xrandr --output 'DP-2' --brightness "$brightness" 2>&1
+    xrandr --output 'DP-2' --brightness "$brightness" 2>&1 &
 }
 control_brightness() {
     local tool=$1
@@ -13,13 +13,15 @@ control_brightness() {
     local fifo_path="/tmp/yad_brightness_fifo_$tool"
     local current_brightness
     local min_value max_value scale_factor
+    local off_btn=102
+    local sw_btn=0
     if [[ "$tool" == "xrandr" ]]; then
         current_brightness=${initial_brightness:-$(xrandr --verbose | grep -i brightness | head -n1 | awk '{print $2}')}
         if [[ -z "$current_brightness" ]]; then
             current_brightness=1.0
         fi
         current_brightness=$(LC_NUMERIC=C echo "$current_brightness * 100" | bc | awk '{printf "%d", $1}')
-        min_value=20 # avoid the screen to be too dark that you can't easily revert..
+        min_value=20 # avoid the screen to be too dark that you can't easily revert, which can happen on xrandr..
         max_value=100
         scale_factor=100
     elif [[ "$tool" == "ddcutil" ]]; then
@@ -37,20 +39,26 @@ control_brightness() {
     [ -p "$fifo_path" ] || mkfifo "$fifo_path"
     yad --scale --vertical --width=100 --close-on-unfocus --step=5 --on-top --height=250 --value="$current_brightness" \
         --min-value="$min_value" --max-value="$max_value" --text="$tool" --text-align=center --print-partial \
-        --button="Switch:0" > "$fifo_path" &
+        --button="Switch:0" --button="Off:102" > "$fifo_path" &
     yad_pid=$!
     {
-        while read -r new_brightness; do
+        while read -r input; do
+            if [[ "$input" == "$off_btn" ]]; then
+                ddcutil setvcp D6 04
+                break
+            fi
+            if [[ "$input" == "$sw_btn" ]]; then
+                break
+            fi
             echo "reset" > "/tmp/yad_idle_reset_$tool"
             if [[ "$tool" == "xrandr" ]]; then
-                new_brightness=$(LC_NUMERIC=C echo "$new_brightness / $scale_factor" | bc -l | awk '{printf "%.1f", $0}')
-                set_brightness_xrandr "$new_brightness"
+                input=$(LC_NUMERIC=C echo "$input / $scale_factor" | bc -l | awk '{printf "%.1f", $0}')
+                set_brightness_xrandr "$input"
             else
-                set_brightness_ddcutil "$new_brightness"
+                set_brightness_ddcutil "$input"
             fi
         done < "$fifo_path"
     } &
-    monitor_idle "$yad_pid" "$tool" &
     wait "$yad_pid"
     if [[ $? -eq 0 ]]; then
         if [[ "$tool" == "xrandr" ]]; then
@@ -67,25 +75,6 @@ control_brightness() {
         fi
     fi
     rm -f "$fifo_path" "/tmp/yad_idle_reset_$tool"
-}
-monitor_idle() {
-    local yad_pid=$1
-    local tool=$2
-    local idle_time=0
-    while kill -0 "$yad_pid" 2>/dev/null; do
-        sleep 1
-        if [[ -f "/tmp/yad_idle_reset_$tool" ]]; then
-            idle_time=0
-            rm -f "/tmp/yad_idle_reset_$tool"
-        else
-            idle_time=$((idle_time + 1))
-        fi
-
-        if [[ $idle_time -ge 5 ]]; then
-            kill "$yad_pid" 2>/dev/null
-            break
-        fi
-    done
 }
 validate_brightness() {
     local value=$1
