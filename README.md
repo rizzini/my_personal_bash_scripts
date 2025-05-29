@@ -13,7 +13,7 @@ It's worth mentioning that I haven't set up the bootstrapping for the scripts ye
 
 ---
 
-### `taskbar_cpu_usage.sh` --> This one going to be a Plasma widget within next month -> https://github.com/rizzini/plasma-applet-simple-cpu-monitor
+### `taskbar_cpu_usage.sh` --> This one is going to be a Plasma widget within next month -> https://github.com/rizzini/plasma-applet-simple-cpu-monitor
 
 **Description:**  
 Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage.  
