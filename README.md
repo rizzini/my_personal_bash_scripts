@@ -138,7 +138,7 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 
 ---
 
-### `taskbar_change_brightness.sh`
+### `taskbar_change_brightness.sh` -> This one will probably be discontinued or reworked.
 
 **Description:**  
 Controls screen brightness for both internal and external monitors, supporting both command-line and graphical (YAD slider) interfaces.  
