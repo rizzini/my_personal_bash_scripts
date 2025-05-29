@@ -1,3 +1,5 @@
+I'm still learning using Git and Github..
+
 All monitoring scripts, those starting with taskbar_*, are performance-sensitive, meaning they're designed to use minimal hardware resources. From time to time, I'll tweak the scripts to make them consume less and less resources as possible. 
 I've started using Awesome Font to add a bit of simple styling, but I'm not sure yet whether I'll keep it this way. I'm not good at that. If you are, feel free to pitch in! They are written in pure Bash, avoiding external tools and subshells as much as possible. I use them with the Command Output Plasma KDE widget, which I'll better explain it how I do it later this week in this README.  
 
@@ -11,6 +13,25 @@ It's worth mentioning that I haven't set up the bootstrapping for the scripts ye
 
 ---
 
+### `taskbar_cpu_usage.sh` --> This one going to be a Plasma widget within next month -> https://github.com/rizzini/plasma-applet-simple-cpu-monitor
+
+**Description:**  
+Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage.  
+- The script reads `/proc/stat` directly to calculate CPU usage, ensuring low overhead.
+- Output is formatted for easy parsing by widgets or other scripts.
+- Uses Awesome Font for visual enhancement, but works without it.
+- If CPU usage exceeds 90%, the output is colored red to alert the user to high load.
+
+**Output:**  
+- Shows the current CPU usage percentage (e.g., `23%`).
+- Output is colored red if usage exceeds 90% to indicate high CPU load.
+- Designed to be updated every second for real-time monitoring.
+
+**Changelog:**  
+- Added the `top_hungry_processes` argument: lists the top 5 processes consuming the most CPU, showing only the process names, one per line, and ignoring threads. (22/05/2025)
+
+---
+
 ### `waydroid_under_xorg.sh`
 
 **Description:**  
@@ -21,7 +42,7 @@ Enables running Waydroid under Xorg by automating the setup and teardown of the 
 - Can be safely used from the terminal or integrated into desktop widgets and launchers.
 - If the Weston window is closed manually, the script ensures Waydroid processes are also stopped.
 - Useful for users running Xorg who want to use Waydroid without switching to a full Wayland session.
-- Requires `weston` compositor and Waydroid installed and configured.
+- Requires `weston` compositor and Waydroid installed.
 
 **Changelog:**  
 *No changes recorded yet.*
@@ -54,25 +75,6 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Added the interface variable at the beginning of the script (20/05/2025)
 - The new unit conversion logic follow the same logic used by the taskbar_disk_monitor.sh script, which uses `case` (20/05/2025)
 
-
----
-
-### `taskbar_cpu_usage.sh`
-
-**Description:**  
-Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage.  
-- The script reads `/proc/stat` directly to calculate CPU usage, ensuring low overhead.
-- Output is formatted for easy parsing by widgets or other scripts.
-- Uses Awesome Font for visual enhancement, but works without it.
-- If CPU usage exceeds 90%, the output is colored red to alert the user to high load.
-
-**Output:**  
-- Shows the current CPU usage percentage (e.g., `23%`).
-- Output is colored red if usage exceeds 90% to indicate high CPU load.
-- Designed to be updated every second for real-time monitoring.
-
-**Changelog:**  
-*No changes recorded yet.*
 
 ---
 
