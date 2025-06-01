@@ -164,6 +164,15 @@ Controls screen brightness for both internal and external monitors, supporting b
 - Allows interactive adjustment via GUI or command line.
 - Prints confirmation messages or errors if an operation fails.
 
+
+<p align="left">
+  <img src="taskbar_change_brightness_ddcutil_screenshot.png" alt="ddcutil"/>
+  &nbsp;&nbsp;&nbsp;
+  <img src="taskbar_change_brightness_xrandr_screenshot.png" alt="xrandr"/>
+</p>
+
+
+
 **Changelog:**  
 - Identified possible infinite loop from unresponsive YAD processes. The script now uses SIGKILL (-9) to forcefully terminate previous yad/script instances when switching modes to prevent this. (21/05/2025)
 - Improved brightness value conversion between xrandr (0.1–1.0) and ddcutil (0–100) modes. (21/05/2025)
