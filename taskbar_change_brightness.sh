@@ -130,7 +130,7 @@ case $1 in
             [ "$new_brightness" -lt 0 ] && new_brightness=0
             set_brightness_ddcutil "$new_brightness"
         else
-            echo "Erro: Ferramenta inválida. Use 'xrandr' ou 'ddcutil'."
+            echo "Error: Invalid tool. Use 'xrandr' or 'ddcutil'."
             exit 1
         fi
         ;;
