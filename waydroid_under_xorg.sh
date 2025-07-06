@@ -18,18 +18,27 @@ copy_userdata_to_mem() {
         echo "$msg Abortando."
         exit 1
     fi
-    # Copia dados do disco para a memória
     sudo cp -a --preserve=all /home/lucas/.local/share/waydroid /home/lucas/.local/share/waydroid_bkp
-    if ! sudo cp -a --preserve=all /home/lucas/.local/share/waydroid /dev/shm/; then
+
+    src_size=$(sudo du -sb /home/lucas/.local/share/waydroid | awk '{print $1}')
+    (
+        cd /home/lucas/.local/share
+        sudo tar cf - waydroid | pv -n -s "$src_size" | sudo tar xf - -C /dev/shm/
+    ) 2>&1 | \
+    yad --progress --title="Waydroid" --center --width=400 \
+        --text="Copiando dados para a memória.." \
+        --percentage=0 --auto-close --auto-kill
+
+    if [[ "${PIPESTATUS[2]}" -ne 0 ]]; then
         erro_msg="Erro ao copiar arquivos de /home/lucas/.local/share/waydroid para /dev/shm/waydroid."
         notify-send -u critical "$erro_msg"
         echo "$erro_msg"
         exit 1
     fi
+
     sudo rm -rf /home/lucas/.local/share/waydroid
     sudo ln -s /dev/shm/waydroid /home/lucas/.local/share/waydroid
 
-    # Checagem rápida: compara número de arquivos e tamanho total
     src_count=$(sudo find /home/lucas/.local/share/waydroid_bkp -type f | wc -l)
     dst_count=$(sudo find /dev/shm/waydroid -type f | wc -l)
     src_size=$(sudo du -sb /home/lucas/.local/share/waydroid_bkp | awk '{print $1}')
@@ -62,14 +71,16 @@ copy_userdata_to_mem() {
 }
 copy_userdata_to_disk() {
     rm -f /home/lucas/.local/share/waydroid
-    # Copia dados da memória para o disco
-    if ! sudo cp -a --preserve=all /dev/shm/waydroid /home/lucas/.local/share/waydroid; then
-        erro_msg="Erro ao copiar arquivos de /dev/shm/waydroid para /home/lucas/.local/share/waydroid."
-        notify-send -u critical "$erro_msg"
-        echo "$erro_msg"
-        exit 1
-    fi
-    # Checagem rápida: compara número de arquivos e tamanho total
+
+    src_size=$(sudo du -sb /dev/shm/waydroid | awk '{print $1}')
+    (
+        cd /dev/shm
+        sudo tar cf - waydroid | pv -n -s "$src_size" | sudo tar xf - -C /home/lucas/.local/share/
+    ) 2>&1 | \
+    yad --progress --title="Waydroid" --center --width=400 \
+        --text="Retornando dados para o disco.." \
+        --percentage=0 --auto-close --auto-kill
+
     src_count=$(sudo find /dev/shm/waydroid -type f | wc -l)
     dst_count=$(sudo find /home/lucas/.local/share/waydroid -type f | wc -l)
     src_size=$(sudo du -sb /dev/shm/waydroid | awk '{print $1}')
@@ -84,11 +95,12 @@ copy_userdata_to_disk() {
         notify-send -u critical "Erro na restauração! Falha ao executar: $erro_cmd. Verifique manualmente."
         echo "Erro na restauração! Falha ao executar: $erro_cmd. Verifique manualmente."
         exit 1
+    else
+        notify-send "Waydroid encerrado com sucesso."
+        sudo rm -rf /dev/shm/waydroid
+        sudo rm -rf /home/lucas/.local/share/waydroid_bkp
     fi
-    sudo rm -rf /dev/shm/waydroid
-    sudo rm -rf /home/lucas/.local/share/waydroid_bkp
 }
-
 
 
 if systemctl is-active "waydroid-container.service" &> /dev/null || lsns | grep -E 'android|lineageos' &> /dev/null || pgrep weston; then
@@ -98,6 +110,7 @@ if systemctl is-active "waydroid-container.service" &> /dev/null || lsns | grep 
     sudo systemctl stop "waydroid-container.service"
     if [ "$data_in_mem" = 'true' ]; then
         copy_userdata_to_disk
+        touch /tmp/waydroid_on_xorg_do_not_copy_again_bitch
         data_in_mem=false
     fi
 else
@@ -110,10 +123,11 @@ else
     sudo systemctl restart "waydroid-container.service"
     pkill -9 adb
     weston --width=700 --height=900 --xwayland &> /dev/null &
+
     timeout=20
     while [[ $timeout -gt 0 ]]; do
         wmctrl -l | grep -q "Weston Compositor" && break
-        sleep 0.5
+        sleep 1
         ((timeout--))
     done
     if [[ $timeout -eq 0 ]]; then
@@ -124,6 +138,7 @@ else
         fi
         exit 1
     fi
+    sleep 1
     DISPLAY=':1' alacritty -e bash -c "WAYLAND_DISPLAY='wayland-1' XDG_SESSION_TYPE='wayland' DISPLAY=':1' /usr/bin/waydroid show-full-ui" &> /dev/null &
     sleep 3
     if pgrep 'weston' > /dev/null; then
@@ -135,9 +150,9 @@ else
     sudo pkill --cgroup=/lxc.payload.waydroid2
     sudo pkill -9 lxc-start
     sudo systemctl stop "waydroid-container.service"
-    if [ "$data_in_mem" = 'true' ]; then
+    if [ "$data_in_mem" = 'true' ] || [ ! -e /tmp/waydroid_on_xorg_do_not_copy_again_bitch ]; then
         copy_userdata_to_disk
         data_in_mem=false
+        rm -f /tmp/waydroid_on_xorg_do_not_copy_again_bitch
     fi
-    
 fi
