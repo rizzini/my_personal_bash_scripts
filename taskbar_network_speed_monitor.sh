@@ -1,6 +1,27 @@
 #!/bin/bash
-interface="enp1s0"
+if [[ "$1" == "loop" && -z "$2" ]]; then
+    loop_mode=1
+    interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
+    if [[ "$interface" =~ ^ttyUSB[0-9]$ ]]; then
+        interface="ppp0";
+    fi
+else
+    interface="${1:-}"
+    if [[ -z "$interface" || "$interface" == "loop" ]]; then
+        interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
+        if [[ "$interface" =~ ^ttyUSB[0-9]$ ]]; then
+            interface="ppp0";
+        fi
+    fi
+    loop_mode=0
+    if [[ "$2" == "loop" ]]; then
+        loop_mode=1
+    fi
+fi
 unit_mode=2
+if [[ "$2" == "loop" ]]; then
+    loop_mode=1
+fi
 if [[ "$1" == "click" ]]; then
     connections=$(ss -tunp 2>/dev/null)
     IFS=$'\n' read -rd '' -a lines <<< "$connections"
@@ -30,13 +51,15 @@ if [[ "$1" == "click" ]]; then
     echo -e "\nExiting..."
     exit 0
 fi
+
 get_data() {
     local iface="$1"
-    local line rx tx
-    while IFS=: read -r dev data; do
-        dev="${dev%% *}"
+    while IFS= read -r line; do
+        dev="${line%%:*}"
+        dev="${dev// /}"
         if [[ "$dev" == "$iface" ]]; then
-            IFS=' ' read -ra fields <<< "$data"
+            data="${line#*:}"
+            read -ra fields <<< "$data"
             rx="${fields[0]}"
             tx="${fields[8]}"
             echo "$rx $tx"
@@ -44,11 +67,7 @@ get_data() {
         fi
     done < /proc/net/dev
 }
-IFS=' ' read -r rx1 tx1 <<< "$(get_data "$interface")"
-sleep 1
-IFS=' ' read -r rx2 tx2 <<< "$(get_data "$interface")"
-rx_original=$((rx2 - rx1))
-tx_original=$((tx2 - tx1))
+
 convert_units() {
     local bytes=$1
     local value unit
@@ -82,6 +101,7 @@ convert_units() {
     esac
     echo "${value}${unit}"
 }
+
 colorize_speed() {
     local speed_str="$1"
     local color_reset="\e[0m"
@@ -101,18 +121,35 @@ colorize_speed() {
         echo "$speed_str"
     fi
 }
-rx_converted=$(convert_units "$rx_original")
-tx_converted=$(convert_units "$tx_original")
-if [[ "$unit_mode" -eq 2 || "$unit_mode" -eq 3 ]]; then
-    if [[ "$rx_converted" == *"MB/s" ]]; then
-        rx_converted=$(colorize_speed "$rx_converted")
+
+main() {
+    IFS=' ' read -r rx1 tx1 <<< "$(get_data "$interface")"
+    sleep 1
+    IFS=' ' read -r rx2 tx2 <<< "$(get_data "$interface")"
+    rx_original=$((rx2 - rx1))
+    tx_original=$((tx2 - tx1))
+    rx_converted=$(convert_units "$rx_original")
+    tx_converted=$(convert_units "$tx_original")
+    if [[ "$unit_mode" -eq 2 || "$unit_mode" -eq 3 ]]; then
+        if [[ "$rx_converted" == *"MB/s" ]]; then
+            rx_converted=$(colorize_speed "$rx_converted")
+        fi
+        if [[ "$tx_converted" == *"MB/s" ]]; then
+            tx_converted=$(colorize_speed "$tx_converted")
+        fi
     fi
-    if [[ "$tx_converted" == *"MB/s" ]]; then
-        tx_converted=$(colorize_speed "$tx_converted")
-    fi
+    con_counter=0
+    while IFS= read -r line; do
+        ((con_counter++))
+    done < <(ss -tun 2>/dev/null | tail -n +2)
+    echo -e " $rx_converted |  $tx_converted |  $con_counter"
+}
+
+if [[ "$loop_mode" -eq 1 ]]; then
+    while true; do
+        main
+        sleep 1
+    done
+else
+    main
 fi
-con_counter=0
-while IFS= read -r line; do
-    ((con_counter++))
-done < <(ss -tun 2>/dev/null | tail -n +2)
-echo -e " $rx_converted |  $tx_converted |  $con_counter"

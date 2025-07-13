@@ -62,8 +62,8 @@ copy_userdata_to_mem() {
             notify-send -u critical "Erro na cópia! Dados revertidos com sucesso."
             echo "Erro na cópia! Dados revertidos com sucesso."
         else
-            notify-send -u critical "Erro na cópia! Falha ao executar: $erro_cmd. Verifique manualmente."
-            echo "Erro na cópia! Falha ao executar: $erro_cmd. Verifique manualmente."
+            notify-send -u critical "Erro na cópia! Verifique manualmente."
+            echo "Erro na cópia! Verifique manualmente."
         fi
         exit 1
     fi
@@ -92,8 +92,8 @@ copy_userdata_to_disk() {
         if [[ $? -ne 0 ]]; then
             erro_cmd="sudo rm -rf /home/lucas/.local/share/waydroid"
         fi
-        notify-send -u critical "Erro na restauração! Falha ao executar: $erro_cmd. Verifique manualmente."
-        echo "Erro na restauração! Falha ao executar: $erro_cmd. Verifique manualmente."
+        notify-send -u critical "Erro na restauração! Verifique manualmente."
+        echo "Erro na restauração! Verifique manualmente."
         exit 1
     else
         notify-send "Waydroid encerrado com sucesso."
@@ -110,14 +110,18 @@ if systemctl is-active "waydroid-container.service" &> /dev/null || lsns | grep 
     sudo systemctl stop "waydroid-container.service"
     if [ "$data_in_mem" = 'true' ]; then
         copy_userdata_to_disk
-        touch /tmp/waydroid_on_xorg_do_not_copy_again_bitch
         data_in_mem=false
     fi
 else
-    if yad --title="Waydroid" --center --question --text="Copiar dados para a memória?"; then
+    if yad --title="Waydroid" --center --question --text="Copiar dados para a memória?" \
+        --button=Não:1 --button=Sim:0 --button=Cancelar:2; then
         copy_userdata_to_mem
         data_in_mem=true
     else
+        if [[ $? -eq 2 ]]; then
+            echo "Operação cancelada pelo usuário."
+            exit
+        fi
         data_in_mem=false
     fi
     sudo systemctl restart "waydroid-container.service"
@@ -139,7 +143,7 @@ else
         exit 1
     fi
     sleep 1
-    DISPLAY=':1' alacritty -e bash -c "WAYLAND_DISPLAY='wayland-1' XDG_SESSION_TYPE='wayland' DISPLAY=':1' /usr/bin/waydroid show-full-ui" &> /dev/null &
+    DISPLAY=':1' alacritty -e bash -c "sleep 1; WAYLAND_DISPLAY='wayland-1' XDG_SESSION_TYPE='wayland' DISPLAY=':1' /usr/bin/waydroid show-full-ui" &> /dev/null &
     sleep 3
     if pgrep 'weston' > /dev/null; then
         while pgrep 'weston' > /dev/null; do
@@ -150,9 +154,8 @@ else
     sudo pkill --cgroup=/lxc.payload.waydroid2
     sudo pkill -9 lxc-start
     sudo systemctl stop "waydroid-container.service"
-    if [ "$data_in_mem" = 'true' ] || [ ! -e /tmp/waydroid_on_xorg_do_not_copy_again_bitch ]; then
+    if [ "$data_in_mem" = 'true' ]; then
         copy_userdata_to_disk
         data_in_mem=false
-        rm -f /tmp/waydroid_on_xorg_do_not_copy_again_bitch
     fi
 fi
