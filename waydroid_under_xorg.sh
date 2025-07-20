@@ -126,7 +126,7 @@ else
     fi
     sudo systemctl restart "waydroid-container.service"
     pkill -9 adb
-    weston --width=700 --height=900 --xwayland &> /dev/null &
+    weston --width=700 --height=900 --xwayland --idle-time=0 &> /dev/null &
 
     timeout=20
     while [[ $timeout -gt 0 ]]; do
