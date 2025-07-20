@@ -2,12 +2,12 @@
 if [[ "$1" == "loop" && -z "$2" ]]; then
     loop_mode=1
     interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
-    [[ "$interface" == "ttyUSB2" ]] && interface="ppp0"
+    [[ "$interface" =~ ^ttyUSB[0-9]$ ]] && interface="ppp0"
 else
     interface="${1:-}"
     if [[ -z "$interface" || "$interface" == "loop" ]]; then
         interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
-        [[ "$interface" == "ttyUSB2" ]] && interface="ppp0"
+        [[ "$interface" =~ ^ttyUSB[0-9]$ ]] && interface="ppp0"
     fi
     loop_mode=0
     if [[ "$2" == "loop" ]]; then
