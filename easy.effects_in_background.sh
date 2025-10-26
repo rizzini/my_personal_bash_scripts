@@ -1,6 +1,6 @@
 #!/bin/bash
-if [ "$(pgrep easyeffects)" ];then
-    pkill easyeffects;
+if pgrep -x easyeffects >/dev/null; then
+    pkill -x easyeffects
 else
-    easyeffects --gapplication-service & disown
+    easyeffects --gapplication-service >/dev/null 2>&1 &
 fi

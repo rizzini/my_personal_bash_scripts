@@ -21,9 +21,9 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Calculates speed by measuring the difference in bytes sent/received over a 1-second interval.
 - Supports three unit display modes (KB/s, MB/s, or automatic selection based on speed), configurable via the `unit_mode` variable in the script at the beginning.
 - The output is color-coded, regardless of the display mode you choose(In the near future, I'll make this dynamic depending on your connection):  
-  - **Green:** 2–10 MB/s  
-  - **Yellow:** 11–30 MB/s  
-  - **Red:** above 30 MB/s  
+  - **Green:** 2-11 MB/s  
+  - **Yellow:** 11-30 MB/s  
+  - **Red:** > 30 MB/s  
   This helps to quickly identify high network usage.
 - Shows the current number of open TCP/UDP connections using the `ss` command.
 
