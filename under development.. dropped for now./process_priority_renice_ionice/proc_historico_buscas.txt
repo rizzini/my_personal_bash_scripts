@@ -1,0 +1,9 @@
+sleep
+mpv
+btrfs
+rustc
+makepkg
+cargo
+torr
+music
+UNO
