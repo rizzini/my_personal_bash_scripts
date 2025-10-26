@@ -14,9 +14,11 @@ enable_zram() {
     mkswap -U clear /dev/zram0
     swapon --discard --priority 100 /dev/zram0
     sysctl -w vm.watermark_boost_factor=0 vm.watermark_scale_factor=125 vm.page-cluster=0 vm.swappiness=180
-    swapon --priority 0 /dev/sda8
+    swapon --priority 10 /dev/sda8
+    sysctl vm.swappiness=10
 }
 disable_zram() {
+    sysctl vm.swappiness=60
     swapoff -a
     echo 1 > /sys/module/zswap/parameters/enabled
     while ! modprobe -r zram; do

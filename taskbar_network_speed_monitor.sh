@@ -1,19 +1,20 @@
 #!/bin/bash
-if [[ "$1" == "loop" && -z "$2" ]]; then
-    loop_mode=1
-    interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
-    [[ "$interface" =~ ^ttyUSB[0-9]$ ]] && interface="ppp0"
-else
-    interface="${1:-}"
-    if [[ -z "$interface" || "$interface" == "loop" ]]; then
-        interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
-        [[ "$interface" =~ ^ttyUSB[0-9]$ ]] && interface="ppp0"
-    fi
-    loop_mode=0
-    if [[ "$2" == "loop" ]]; then
-        loop_mode=1
-    fi
-fi
+# if [[ "$1" == "loop" && -z "$2" ]]; then
+#     loop_mode=1
+#     interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
+#     [[ "$interface" =~ ^ttyUSB[0-9]$ ]] && interface="ppp0"
+# else
+#     interface="${1:-}"
+#     if [[ -z "$interface" || "$interface" == "loop" ]]; then
+#         interface=$(nmcli -p con show --active | tail -n +6 | grep -v loopback | awk '{print $4}' | head -n1)
+#         [[ "$interface" =~ ^ttyUSB[0-9]$ ]] && interface="ppp0"
+#     fi
+#     loop_mode=0
+#     if [[ "$2" == "loop" ]]; then
+#         loop_mode=1
+#     fi
+# fi
+interface=enp1s0
 unit_mode=2
 if [[ "$2" == "loop" ]]; then
     loop_mode=1
@@ -109,7 +110,7 @@ colorize_speed() {
     value=$(echo "$value" | tr ',' '.' | xargs)
     if (( $(echo "$value >= 2 && $value <= 10" | bc -l) )); then
         echo -e "${color_green}${speed_str}${color_reset}"
-    elif (( $(echo "$value >= 11 && $value <= 30" | bc -l) )); then
+    elif (( $(echo "$value >= 10 && $value <= 30" | bc -l) )); then
         echo -e "${color_yellow}${speed_str}${color_reset}"
     elif (( $(echo "$value > 30" | bc -l) )); then
         echo -e "${color_red}${speed_str}${color_reset}"
