@@ -9,29 +9,9 @@ This repository contains a set of Bash scripts, which are intended to be shared 
 
 ### `Important`
 
-It's worth mentioning that I haven't set up the bootstrapping for the scripts yet. Therefore, while the code itself can certainly be reused (if you know what you're doing), the scripts are not yet redistributable.
+It's worth mentioning that I haven't set up the bootstrapping for the scripts yet. Therefore, while the code itself can certainly be reused (if you know what you're doing), the scripts are not redistributable.
 
 ---
-
-### `taskbar_cpu_usage.sh` --> This one is going to be a Plasma widget within next month -> https://github.com/rizzini/plasma-applet-simple-cpu-monitor
-
-**Description:**  
-Displays the current CPU usage percentage over a period of one second, designed for minimal resource usage.  
-- The script reads `/proc/stat` directly to calculate CPU usage, ensuring low overhead.
-- Output is formatted for easy parsing by widgets or other scripts.
-- Uses Awesome Font for visual enhancement, but works without it.
-- If CPU usage exceeds 90%, the output is colored red to alert the user to high load.
-
-**Output:**  
-- Shows the current CPU usage percentage (e.g., `23%`).
-- Output is colored red if usage exceeds 90% to indicate high CPU load.
-- Designed to be updated every second for real-time monitoring.
-
-**Changelog:**  
-- Added the `top_hungry_processes` argument: lists the top 5 processes consuming the most CPU, showing only the process names, one per line, and ignoring threads. (22/05/2025)
-
----
-
 
 ### `taskbar_network_speed_monitor.sh`
 
@@ -58,7 +38,6 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Added `colorize_speed` function for more accurate and flexible color-coding of speeds, no matter the unit mode mode, (green for 2–10 MB/s, yellow for 11–30 MB/s, red for above 30 MB/s) (19/05/2025)
 - Added the interface variable at the beginning of the script (20/05/2025)
 - The new unit conversion logic follow the same logic used by the taskbar_disk_monitor.sh script, which uses `case` (20/05/2025)
-
 
 ---
 
