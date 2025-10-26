@@ -32,22 +32,6 @@ Displays the current CPU usage percentage over a period of one second, designed 
 
 ---
 
-### `waydroid_under_xorg.sh`
-
-**Description:**  
-Enables running Waydroid under Xorg by automating the setup and teardown of the required Weston compositor session.  
-- Designed to toggle Waydroid on and off: run once to launch Waydroid in a Weston window, run again to close everything cleanly.
-- Handles starting and stopping both the Waydroid container and the Weston compositor.
-- Detects if Waydroid or Weston is already running and acts accordingly to avoid duplicate sessions.
-- Can be safely used from the terminal or integrated into desktop widgets and launchers.
-- If the Weston window is closed manually, the script ensures Waydroid processes are also stopped.
-- Useful for users running Xorg who want to use Waydroid without switching to a full Wayland session.
-- Requires `weston` compositor and Waydroid installed.
-
-**Changelog:**  
-*No changes recorded yet.*
-
----
 
 ### `taskbar_network_speed_monitor.sh`
 
@@ -138,53 +122,13 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 
 ---
 
-### `taskbar_change_brightness.sh` -> This one will probably be discontinued or reworked.
+### `pipewire_auto_change_volume.sh`
 
-**Description:**  
-Controls screen brightness for both internal and external monitors, supporting both command-line and graphical (YAD slider) interfaces.  
-- Supports two main backends:
-  - **xrandr**: For internal displays and some external monitors, adjusts brightness via X server.
-  - **ddcutil**: For external monitors supporting DDC/CI, communicates directly with the monitor hardware.
-- Allows increasing or decreasing brightness in steps, or setting an exact value.
-- Provides GUI sliders for both xrandr and ddcutil, automatically switching between them if one is already open.
-- Handles detection of available displays and gracefully falls back if a method is unavailable.
-- Brightness values for xrandr are between 0.1 and 1.0; for ddcutil, between 0 and 100.
-- Can show the current brightness value for each method.
+**Description:**
+Automatically enforces a target volume for PipeWire "sink-input" streams. The script listens to `pactl subscribe` events, debounces activity for each stream, and sets the stream volume to the configured `TARGET_VOL` (currently 140%). It's designed to run quietly in the background and be low-overhead.
 
-**Arguments:**  
-- `increase [xrandr|ddcutil]`: Increase brightness using the specified method.
-- `decrease [xrandr|ddcutil]`: Decrease brightness using the specified method.
-- `show_xrandr`: Show current brightness for xrandr.
-- `show_ddcutil`: Show current brightness for ddcutil.
-- `choose_xrandr`: Open GUI slider (YAD) for xrandr.
-- `choose_ddcutil`: Open GUI slider (YAD) for ddcutil.
+Why I made this: Firefox with the KDE Plasma (or related audio-stacks like PipeWire/PulseAudio), I noticed that Firefox’s audio stream behaviour is inconsistent: application volume may reset unexpectedly (e.g., from a custom level back to 100%), when media playback is paused for a few seconds (typically more than 3–5 seconds) which can be very annoying. This will workaround that.
 
-**Output:**  
-- Shows the current brightness value for the selected monitor and method.
-- Allows interactive adjustment via GUI or command line.
-- Prints confirmation messages or errors if an operation fails.
-
-
-<p align="left">
-  <img src="taskbar_change_brightness_ddcutil_screenshot.png" alt="ddcutil"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="taskbar_change_brightness_xrandr_screenshot.png" alt="xrandr"/>
-</p>
-
-
-
-**Changelog:**  
-- Identified possible infinite loop from unresponsive YAD processes. The script now uses SIGKILL (-9) to forcefully terminate previous yad/script instances when switching modes to prevent this. (21/05/2025)
-- Improved brightness value conversion between xrandr (0.1–1.0) and ddcutil (0–100) modes. (21/05/2025)
-- Fixed bug where switching between xrandr and ddcutil using the Switch button could result in "Initial value greater than maximum" errors in YAD. (21/05/2025)
-- Now, when switching modes, the initial brightness value is always converted to the correct scale for the selected tool. (21/05/2025)
-- Enhanced robustness by ensuring default values are set if brightness cannot be retrieved. (21/05/2025)
-- Minor code cleanup and improved comments for maintainability. (21/05/2025)
-- When switching modes, the brightness value from the previous tool, whether xrandr or ddcutil, was being carried over, which shouldn't happen. Both tools have their own independent brightness systems. (21/05/2025)
-- Added the option to turn off monitor on both xrandr and ddcutil interfaces. (22/05/2025)
-- Some coding improvement for readability and maintainability. (22/05/2025)
-- Removed the feature where the YAD interface closes automatically after a short period. This is not a good idea on slow systems, as YAD can take some time to load, and this feature could result in no interface being shown at all. (22/05/2025)
----
-
-
+**Changelog:**
+- *No changes recorded yet.*
 
