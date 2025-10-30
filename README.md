@@ -21,8 +21,8 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Calculates speed by measuring the difference in bytes sent/received over a 1-second interval.
 - Supports three unit display modes (KB/s, MB/s, or automatic selection based on speed), configurable via the `unit_mode` variable in the script at the beginning.
 - The output is color-coded, regardless of the display mode you choose(In the near future, I'll make this dynamic depending on your connection):  
-  - **Green:** 2-11 MB/s  
-  - **Yellow:** 11-30 MB/s  
+  - **Green:** 2-10 MB/s  
+  - **Yellow:** 10-30 MB/s  
   - **Red:** > 30 MB/s  
   This helps to quickly identify high network usage.
 - Shows the current number of open TCP/UDP connections using the `ss` command.
@@ -38,6 +38,8 @@ Displays real-time network speed (download and upload) and the number of open ne
 - Added `colorize_speed` function for more accurate and flexible color-coding of speeds, no matter the unit mode mode, (green for 2–10 MB/s, yellow for 11–30 MB/s, red for above 30 MB/s) (19/05/2025)
 - Added the interface variable at the beginning of the script (20/05/2025)
 - The new unit conversion logic follow the same logic used by the taskbar_disk_monitor.sh script, which uses `case` (20/05/2025)
+- Fixed: 10 MB/s wasn't being colorized due to an off-by-one in the range check (was 11–30 MB/s). Range corrected to 10–30 MB/s so 10 MB/s is colored as expected. (26/10/2025)
+ - Performance: replaced `nmcli`-based interface detection with lightweight checks using `/dev/ttyUSB*`, `ip link` and `/proc/net/dev` to reduce CPU overhead when running every second. (30/10/2025)
 
 ---
 

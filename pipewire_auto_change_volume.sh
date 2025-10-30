@@ -30,7 +30,6 @@ set_last_ms() {
 }
 get_last_ms() {
     local id=$1
-    # Primeiro tentar cache em memória
     if [[ -n ${LAST_MS_CACHE[$id]-} ]]; then
         printf '%s' "${LAST_MS_CACHE[$id]}"
         return
