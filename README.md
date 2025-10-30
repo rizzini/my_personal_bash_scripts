@@ -13,7 +13,7 @@ It's worth mentioning that I haven't set up the bootstrapping for the scripts ye
 
 ---
 
-### `taskbar_network_speed_monitor.sh`
+### [`taskbar_network_speed_monitor.sh`](https://github.com/rizzini/my_personal_bash_scripts/blob/master/taskbar_network_speed_monitor.sh)
 
 **Description:**  
 Displays real-time network speed (download and upload) and the number of open network connections, optimized for minimal resource usage.  
@@ -43,7 +43,7 @@ Displays real-time network speed (download and upload) and the number of open ne
 
 ---
 
-### `taskbar_memory_usage.sh`
+### [`taskbar_memory_usage.sh`](https://github.com/rizzini/my_personal_bash_scripts/blob/master/taskbar_memory_usage.sh)
 
 **Description:**  
 Displays current memory usage and ZRAM swap usage in a lightweight and efficient way, ideal for status bars and widgets.  
@@ -70,7 +70,7 @@ Displays current memory usage and ZRAM swap usage in a lightweight and efficient
 
 ---
 
-### `taskbar_disk_monitor.sh`
+### [`taskbar_disk_monitor.sh`](https://github.com/rizzini/my_personal_bash_scripts/blob/master/taskbar_disk_monitor.sh)
 
 **Description:**  
 Monitors disk read and write speeds with high precision for all disks or a specific disk, designed for minimal resource usage and fast updates.  
@@ -103,7 +103,7 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 
 ---
 
-### `pipewire_auto_change_volume.sh`
+### [`pipewire_auto_change_volume.sh`](https://github.com/rizzini/my_personal_bash_scripts/blob/master/pipewire_auto_change_volume.sh)
 
 **Description:**
 Automatically enforces a target volume for PipeWire "sink-input" streams. The script listens to `pactl subscribe` events, debounces activity for each stream, and sets the stream volume to the configured `TARGET_VOL` (currently 140%). It's designed to run quietly in the background and be low-overhead.
