@@ -1,13 +1,13 @@
 #!/bin/bash
 if [[ "$1" == "loop" && -z "$2" ]]; then
     loop_mode=1
-    shopt -s nullglob 2>/dev/null || true
+    shopt -s nullglob 2>/dev/null
     ttymods=(/dev/ttyUSB*)
     if ((${#ttymods[@]} > 0)); then
         if ip link show ppp0 >/dev/null 2>&1; then
             interface="ppp0"
         else
-            first_ppp=$(ls /sys/class/net 2>/dev/null | grep '^ppp' | head -n1 || true)
+            first_ppp=$(ls /sys/class/net 2>/dev/null | grep '^ppp' | head -n1 )
             if [[ -n "$first_ppp" ]]; then
                 interface="$first_ppp"
             else
@@ -20,13 +20,13 @@ if [[ "$1" == "loop" && -z "$2" ]]; then
 else
     interface="${1:-}"
     if [[ -z "$interface" || "$interface" == "loop" ]]; then
-        shopt -s nullglob 2>/dev/null || true
+        shopt -s nullglob 2>/dev/null
         ttymods=(/dev/ttyUSB*)
         if ((${#ttymods[@]} > 0)); then
             if ip link show ppp0 >/dev/null 2>&1; then
                 interface="ppp0"
             else
-                first_ppp=$(ls /sys/class/net 2>/dev/null | grep '^ppp' | head -n1 || true)
+                first_ppp=$(ls /sys/class/net 2>/dev/null | grep '^ppp' | head -n1 )
                 if [[ -n "$first_ppp" ]]; then
                     interface="$first_ppp"
                 else
@@ -46,35 +46,6 @@ interface=enp1s0
 unit_mode=2
 if [[ "$2" == "loop" ]]; then
     loop_mode=1
-fi
-if [[ "$1" == "click" ]]; then
-    connections=$(ss -tunp 2>/dev/null)
-    IFS=$'\n' read -rd '' -a lines <<< "$connections"
-    unset 'lines[0]'
-    echo "Number of open connections per process:"
-    declare -A process_counter
-    declare -A process_names
-    no_process=0
-    for line in "${lines[@]}"; do
-        if [[ "$line" == *"users:"* ]]; then
-            pid="${line##*pid=}"
-            pid="${pid%%,*}"
-            ((process_counter[$pid]++))
-            if [[ -z "${process_names[$pid]}" ]]; then
-                process_names[$pid]=$(ps -p "$pid" -o comm= 2>/dev/null || echo "Unknown")
-            fi
-        else
-            ((no_process++))
-        fi
-    done
-    for pid in "${!process_counter[@]}"; do
-        echo "${process_counter[$pid]} ${process_names[$pid]}"
-    done | sort -nr
-    echo -e "\nConnections without associated process: $no_process"
-    echo -e "\nPress any key to exit."
-    read -n 1 -s key
-    echo -e "\nExiting..."
-    exit 0
 fi
 
 get_data() {
@@ -163,11 +134,7 @@ main() {
             tx_converted=$(colorize_speed "$tx_converted")
         fi
     fi
-    con_counter=0
-    while IFS= read -r line; do
-        ((con_counter++))
-    done < <(ss -tun 2>/dev/null | tail -n +2)
-    echo -e " $rx_converted |  $tx_converted |  $con_counter"
+    echo -e " $rx_converted |  $tx_converted"
 }
 
 if [[ "$loop_mode" -eq 1 ]]; then

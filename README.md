@@ -66,7 +66,9 @@ Displays current memory usage and ZRAM swap usage in a lightweight and efficient
 - Shows ZRAM usage in MB/GB or "OFF" if ZRAM is disabled.
 
 **Changelog:**  
-*No changes recorded yet.*
+- Safety: prevent disabling ZRAM when there isn't enough physical RAM plus other disco swap free to relocate pages currently stored in ZRAM. The script's `disable_zram` now calls `can_disable_zram` and will refuse to `swapoff` ZRAM if `MemAvailable + other swap free < zram_used`, printing a clear message and aborting to avoid OOM/hang. (01/11/2025)
+- Added display of disk swap usage as "Disco: <size>" when any disk swap is used; shown alongside ZRAM or OFF. (01/11/2025)
+
 
 ---
 
