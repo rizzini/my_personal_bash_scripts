@@ -3,7 +3,7 @@ I'm still learning using Git and Github..
 All monitoring scripts, those starting with taskbar_*, are performance-sensitive, meaning they're designed to use minimal hardware resources. From time to time, I'll tweak the scripts to make them consume less and less resources as possible. 
 I've started using Awesome Font to add a bit of simple styling, but I'm not sure yet whether I'll keep it this way. I'm not good at that. If you are, feel free to pitch in! They are written in pure Bash, avoiding external tools and subshells as much as possible. I use them with the Command Output Plasma KDE widget, which I'll better explain it how I do it later this week in this README.  
 
-This repository contains a set of Bash scripts, which are intended to be shared more as an engine than as a final, styled solution, for system monitoring and hardware control on Linux. Below you will find a detailed description of each script, including all arguments and their functions. 
+This repository contains a set of Bash scripts, which are intended more as a core toolkit than as a polished, ready-to-use solution for system monitoring and hardware control on Linux. Below you will find a detailed description of each script, including all arguments and their functions. 
 
 ![](taskbar_screenshot.png)
 

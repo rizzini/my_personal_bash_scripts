@@ -22,14 +22,10 @@ disable_zram() {
 
     can_disable_zram
     if ! (( mem_available_kb + other_swap_free_kb >= zram_used_kb )); then
-        # Use notify-send for user-visible alerts instead of printf
         notify-send -u critical "Refusing to disable zram" "Not enough memory/swap to relocate ${zram_used_kb} KB from zram.\nMemAvailable=${mem_available_kb} KB, other swap free=${other_swap_free_kb} KB"
         return 1
     fi
 
-    # We will explicitly swapoff all swap devices (both zram and disk/file swaps)
-    # because we have verified there is enough physical memory to relocate pages.
-    # Avoid `swapoff -a` and instead iterate /proc/swaps skipping the header.
     for s in $(awk 'NR>1 {print $1}' /proc/swaps); do
         swapoff "$s" || { notify-send -u critical "Failed to swapoff $s"; return 1; }
     done
@@ -53,7 +49,6 @@ can_disable_zram() {
 
     other_swap_free_kb=0
     zram_used_kb=0
-    # Skip the header line in /proc/swaps (first line is column names)
     while read -r name type size used pr; do
         if [[ "$name" == /dev/zram* ]]; then
             zram_used_kb=$((zram_used_kb + used))
