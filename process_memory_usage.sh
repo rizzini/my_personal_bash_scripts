@@ -8,7 +8,6 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-# Force decimal point instead of comma for formatting
 export LC_NUMERIC=C
 
 SEARCH_RAW="$1"
@@ -17,7 +16,6 @@ SELF_PID=$$
 TOTAL_PSS=0
 declare -a MATCH_PIDS=()
 
-# Convert KB to human-readable (KB/MB/GB). Input expected in integer KB.
 convert_to_human_readable() {
     local kb=$1
     if [ "$kb" -ge 1048576 ]; then
@@ -29,11 +27,9 @@ convert_to_human_readable() {
     fi
 }
 
-# Check whether $pid itself or any of its ancestors contain the search string
 is_descendant_of_search() {
     local pid=$1
     while [ "$pid" -gt 1 ]; do
-        # avoid matching our own script
         if [ "$pid" -eq "$SELF_PID" ]; then
             return 1
         fi
@@ -63,24 +59,17 @@ is_descendant_of_search() {
 }
 
 
-# --- Faster PID collection using a single `ps` snapshot ---
-# By default, restrict to the current user to reduce scanning time.
-# Use -a/--all to scan system-wide (slower).
-
 SCAN_ALL=0
 if [ "${1:-}" = "-a" ] || [ "${1:-}" = "--all" ]; then
     SCAN_ALL=1
-    # shift search arg if user passed the flag first
     SEARCH_RAW="${2:-}"
     SEARCH=$(printf '%s' "$SEARCH_RAW" | tr '[:upper:]' '[:lower:]')
 fi
 
 ps_source=""
 if [ "$SCAN_ALL" -eq 1 ]; then
-    # full system scan (slower)
     ps_source=$(ps -eo pid=,ppid=,comm=,cmd= -ww 2>/dev/null)
 else
-    # restrict to current user's processes (much faster)
     USERNAME=$(id -un)
     ps_source=$(ps -u "$USERNAME" -o pid=,ppid=,comm=,cmd= -ww 2>/dev/null)
 fi
@@ -90,7 +79,6 @@ if [ -z "$ps_source" ]; then
     exit 1
 fi
 
-# Use awk to find root matches and collect all their descendants efficiently
 MATCH_PIDS=( $(printf '%s\n' "$ps_source" | awk -v search="$SEARCH" '
     BEGIN{IGNORECASE=1}
     {
@@ -120,7 +108,6 @@ MATCH_PIDS=( $(printf '%s\n' "$ps_source" | awk -v search="$SEARCH" '
     }'
 ) )
 
-# Remove any instance of our own PID if present
 TMP=()
 for p in "${MATCH_PIDS[@]}"; do
     if [ "$p" -ne "$SELF_PID" ] 2>/dev/null; then
@@ -137,7 +124,6 @@ fi
 echo "Uso de memória para: $SEARCH_RAW"
 echo "----------------------------------------"
 
-# For each matched PID, prefer smaps_rollup, fallback to smaps. Sum integer KB values.
 for pid in "${MATCH_PIDS[@]}"; do
     pss=0
     if [ -r "/proc/$pid/smaps_rollup" ]; then
@@ -148,7 +134,6 @@ for pid in "${MATCH_PIDS[@]}"; do
         pss=0
     fi
 
-    # Normalize to integer KB (smaps/smaps_rollup already report KB)
     pss=${pss%%.*}
     [ -z "$pss" ] && pss=0
 
