@@ -4,11 +4,11 @@ VOL_PCT=$(awk -v v="$TARGET_VOL" 'BEGIN{printf "%.0f%%", v*100}')
 
 VOL_EPS=0.005
 
-COOLDOWN_MS=400
+COOLDOWN_MS=400 # ajustar
 
 declare -A LAST_MS_CACHE=()
 
-DEBOUNCE_MS=60
+DEBOUNCE_MS=130 # não deixar muito baixo!
 
 SLEEP_DEBOUNCE=$(awk -v d=$DEBOUNCE_MS 'BEGIN{printf "%.3f", d/1000}')
 

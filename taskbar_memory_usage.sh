@@ -8,7 +8,7 @@ enable_zram() {
         modprobe zram num_devices=1 max_comp_streams=4
         sleep 1
     fi
-#   echo /dev/sda8 > /sys/block/zram0/backing_dev
+#   echo /dev/sda8 > /sys/block/zram0/backing_dev # ainda não sei se vale a pena usar 'backing_dev'
     echo lzo > /sys/block/zram0/comp_algorithm
     echo 6G > /sys/block/zram0/disksize
     mkswap -U clear /dev/zram0
@@ -18,8 +18,6 @@ enable_zram() {
     sysctl vm.swappiness=10
 }
 disable_zram() {
-    sysctl vm.swappiness=60
-
     can_disable_zram
     if ! (( mem_available_kb + other_swap_free_kb >= zram_used_kb )); then
         notify-send -u critical "Refusing to disable zram" "Not enough memory/swap to relocate ${zram_used_kb} KB from zram.\nMemAvailable=${mem_available_kb} KB, other swap free=${other_swap_free_kb} KB"
@@ -70,6 +68,7 @@ elif [ "$1" == 'startup' ]; then
     enable_zram
     exit
 fi
+
 adjust_unit() {
     local scale=1024
     local units=("KB" "MB" "GB")
@@ -98,6 +97,7 @@ while read -r key val _; do
         "Shmem:") shmem=$val ;;
     esac
 done < /proc/meminfo
+
 swap_used_zram_total=0
 swap_used_disk_total=0
 while read -r name _ _ used _; do
@@ -107,6 +107,7 @@ while read -r name _ _ used _; do
         swap_used_disk_total=$((swap_used_disk_total + used))
     fi
 done < /proc/swaps
+
 mem_used=$((mem_total - mem_free - buffers - cached - sreclaimable + shmem))
 mem_used_mb=$((mem_used / 1024))
 if ((mem_used_mb >= 1024)); then
@@ -119,6 +120,7 @@ if ((mem_used_mb >= 1024)); then
 else
     mem_used_gb_colored="${mem_used_mb}MB"
 fi
+
 output="Mem: $mem_used_gb_colored"
 if [[ "$swaps" == *"/dev/zram0"* ]]; then
     output="$output / ZRAM: $(adjust_unit "$swap_used_zram_total")"
