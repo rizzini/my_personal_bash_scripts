@@ -1,4 +1,5 @@
 #!/bin/bash
+# script it not detecting ppp0 activity at the moment
 if [[ "$1" == "loop" && -z "$2" ]]; then
     loop_mode=1
     shopt -s nullglob 2>/dev/null
