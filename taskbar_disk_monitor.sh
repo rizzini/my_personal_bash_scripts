@@ -37,10 +37,10 @@ collect_data() {
         read_total["$disk"]=$((data_read2[$disk] - data_read1[$disk]))
         write_total["$disk"]=$((data_write2[$disk] - data_write1[$disk]))
         current_time=$(date +%s)
-        if [[ ${read_total[$disk]} -ge 20480 ]]; then
+        if [[ ${read_total[$disk]} -ge 4096 ]]; then # transfer threshold -> 4MB/s
             time_alert_read["$disk"]=$current_time
         fi
-        if [[ ${write_total[$disk]} -ge 20480 ]]; then
+        if [[ ${write_total[$disk]} -ge 4096 ]]; then #transfer threshold -> 4MB/s
             time_alert_write["$disk"]=$current_time
         fi
     done
@@ -102,11 +102,11 @@ display_data() {
             esac
             current_time=$(date +%s)
             if [[ -n "${time_alert_read[$disk]}" && $((current_time - time_alert_read[$disk])) -le 3 ]]; then
-                if [ "${value_read%.*}" -le 15 ]; then
+                if [ "${value_read%.*}" -ge 4 ] && [ "${value_read%.*}" -lt 15 ]; then
                     value_read="\e[92m${value_read}${unit_read}\e[0m"
-                elif [ "${value_read%.*}" -le 65 ]; then
+                elif [ "${value_read%.*}" -ge 15 ] && [ "${value_read%.*}" -lt 65 ]; then
                     value_read="\e[93m${value_read}${unit_read}\e[0m"
-                else
+                elif [ "${value_read%.*}" -ge 65 ]; then
                     value_read="\e[91m${value_read}${unit_read}\e[0m"
                 fi
             else
@@ -114,11 +114,11 @@ display_data() {
             fi
 
             if [[ -n "${time_alert_write[$disk]}" && $((current_time - time_alert_write[$disk])) -le 3 ]]; then
-                if [ "${value_write%.*}" -le 15 ]; then
+                if [ "${value_write%.*}" -ge 4 ] && [ "${value_write%.*}" -lt 15 ]; then
                     value_write="\e[92m${value_write}${unit_write}\e[0m"
-                elif [ "${value_write%.*}" -le 65 ]; then
+                elif [ "${value_write%.*}" -ge 15 ] && [ "${value_write%.*}" -lt 65 ]; then
                     value_write="\e[93m${value_write}${unit_write}\e[0m"
-                else
+                elif [ "${value_write%.*}" -ge 65 ]; then
                     value_write="\e[91m${value_write}${unit_write}\e[0m"
                 fi
             else
@@ -184,25 +184,24 @@ display_data() {
             esac
 
             current_time=$(date +%s)
-            if [[ -n "${time_alert_read[$specified_disk]}" && $((current_time - time_alert_read[$specified_disk])) -le 3 ]]; then
-                if [ "${value_read%.*}" -le 15 ]; then
+             if [[ -n "${time_alert_read[$specified_disk]}" && $((current_time - time_alert_read[$specified_disk])) -le 3 ]]; then
+                if [ "${value_read%.*}" -ge 4 ] && [ "${value_read%.*}" -lt 15 ]; then
                     value_read="\e[92m${value_read}${unit_read}\e[0m"
-                elif [ "${value_read%.*}" -le 65 ]; then
+                elif [ "${value_read%.*}" -ge 15 ] && [ "${value_read%.*}" -lt 65 ]; then
                     value_read="\e[93m${value_read}${unit_read}\e[0m"
-                else
+                elif [ "${value_read%.*}" -ge 65 ]; then
                     value_read="\e[91m${value_read}${unit_read}\e[0m"
                 fi
             else
-                value_read="${value_read}${unit_read}"
+            value_read="${value_read}${unit_read}"
             fi
 
             if [[ -n "${time_alert_write[$specified_disk]}" && $((current_time - time_alert_write[$specified_disk])) -le 3 ]]; then
-
-                if [ "${value_write%.*}" -le 15 ]; then
+                if [ "${value_write%.*}" -ge 4 ] && [ "${value_write%.*}" -lt 15 ]; then
                     value_write="\e[92m${value_write}${unit_write}\e[0m"
-                elif [ "${value_write%.*}" -le 65 ]; then
+                elif [ "${value_write%.*}" -ge 15 ] && [ "${value_write%.*}" -lt 65 ]; then
                     value_write="\e[93m${value_write}${unit_write}\e[0m"
-                else
+                elif [ "${value_write%.*}" -ge 65 ]; then
                     value_write="\e[91m${value_write}${unit_write}\e[0m"
                 fi
             else

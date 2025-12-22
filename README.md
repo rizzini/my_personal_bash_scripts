@@ -95,14 +95,17 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 
 **Output:**  
 - Displays read and write speeds in KB/s or MB/s for the selected disk(s).
-- Output uses graduated colorization when recent high activity is detected (alert threshold is the same as the script: delta >= 20480 → ~20MB per sample). When an alert is active the numeric value is colorized for a short window (3s) and the color reflects magnitude (green: low, yellow: medium, red: high). Colors are applied separately for read and write values.
+- Output uses graduated colorization when recent high activity is detected (script sets an alert when the per-sample delta >= 4096, i.e., ≈4 MB for the default sample period). When an alert is active the numeric value is colorized for a short window (3 seconds) and the color reflects magnitude. Color bands are applied to the integer portion of the formatted value and are currently implemented as:
+  - **Green:** 4–14 (MB/s)
+  - **Yellow:** 15–64 (MB/s)
+  - **Red:** ≥65 (MB/s)
 - When using `all`, shows a summary for each detected disk.
 - Designed for easy parsing by widgets or other scripts.
 
 **Changelog:**
-- 22/12/2025 — Added graduated colorization for read/write values when a high-activity alert is triggered; colors now reflect magnitude (green/yellow/red) instead of unconditionally turning red.
-- 22/12/2025 — Colorization applies independently to reads and writes and is shown only for a short alert window (3 seconds) after the activity threshold is crossed.
-- 22/12/2025 — Improved numeric handling for threshold checks (compare integer portion of the formatted value to determine color bands) and small formatting/consistency cleanups.
+- 22/12/2025 — Alert threshold changed to a per-sample delta of **4096** (≈4 MB for the default sample); this makes the monitor more sensitive to moderate activity.
+- 22/12/2025 — Graduated colorization applied to recent alerts: green (4–14), yellow (15–64), red (≥65). Colors apply independently to reads and writes for clearer per-direction visibility.
+
 
 ---
 
