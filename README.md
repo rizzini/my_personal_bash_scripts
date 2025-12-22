@@ -95,13 +95,14 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 
 **Output:**  
 - Displays read and write speeds in KB/s or MB/s for the selected disk(s).
-- Output is color-coded: values turn red if activity exceeds 20MB/s.
+- Output uses graduated colorization when recent high activity is detected (alert threshold is the same as the script: delta >= 20480 → ~20MB per sample). When an alert is active the numeric value is colorized for a short window (3s) and the color reflects magnitude (green: low, yellow: medium, red: high). Colors are applied separately for read and write values.
 - When using `all`, shows a summary for each detected disk.
 - Designed for easy parsing by widgets or other scripts.
 
-**Changelog:**  
-- Updated the 'loop' argument output to also use the Awesome font. (18/05/2025)
-- Refactored unit conversion logic: added `unit_mode` variable to allow switching between KB/s(`unit_mode=1`), MB/s(`unit_mode=2`), or automatic(`unit_mode=3`) unit selection depending on the speed. (19/05/2025)
+**Changelog:**
+- 22/12/2025 — Added graduated colorization for read/write values when a high-activity alert is triggered; colors now reflect magnitude (green/yellow/red) instead of unconditionally turning red.
+- 22/12/2025 — Colorization applies independently to reads and writes and is shown only for a short alert window (3 seconds) after the activity threshold is crossed.
+- 22/12/2025 — Improved numeric handling for threshold checks (compare integer portion of the formatted value to determine color bands) and small formatting/consistency cleanups.
 
 ---
 

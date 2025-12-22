@@ -102,13 +102,25 @@ display_data() {
             esac
             current_time=$(date +%s)
             if [[ -n "${time_alert_read[$disk]}" && $((current_time - time_alert_read[$disk])) -le 3 ]]; then
-                value_read="\e[91m${value_read}${unit_read}\e[0m"
+                if [ "${value_read%.*}" -le 15 ]; then
+                    value_read="\e[92m${value_read}${unit_read}\e[0m"
+                elif [ "${value_read%.*}" -le 65 ]; then
+                    value_read="\e[93m${value_read}${unit_read}\e[0m"
+                else
+                    value_read="\e[91m${value_read}${unit_read}\e[0m"
+                fi
             else
                 value_read="${value_read}${unit_read}"
             fi
 
             if [[ -n "${time_alert_write[$disk]}" && $((current_time - time_alert_write[$disk])) -le 3 ]]; then
-                value_write="\e[91m${value_write}${unit_write}\e[0m"
+                if [ "${value_write%.*}" -le 15 ]; then
+                    value_write="\e[92m${value_write}${unit_write}\e[0m"
+                elif [ "${value_write%.*}" -le 65 ]; then
+                    value_write="\e[93m${value_write}${unit_write}\e[0m"
+                else
+                    value_write="\e[91m${value_write}${unit_write}\e[0m"
+                fi
             else
                 value_write="${value_write}${unit_write}"
             fi
@@ -173,13 +185,26 @@ display_data() {
 
             current_time=$(date +%s)
             if [[ -n "${time_alert_read[$specified_disk]}" && $((current_time - time_alert_read[$specified_disk])) -le 3 ]]; then
-                value_read="\e[91m${value_read}${unit_read}\e[0m"
+                if [ "${value_read%.*}" -le 15 ]; then
+                    value_read="\e[92m${value_read}${unit_read}\e[0m"
+                elif [ "${value_read%.*}" -le 65 ]; then
+                    value_read="\e[93m${value_read}${unit_read}\e[0m"
+                else
+                    value_read="\e[91m${value_read}${unit_read}\e[0m"
+                fi
             else
                 value_read="${value_read}${unit_read}"
             fi
 
             if [[ -n "${time_alert_write[$specified_disk]}" && $((current_time - time_alert_write[$specified_disk])) -le 3 ]]; then
-                value_write="\e[91m${value_write}${unit_write}\e[0m"
+
+                if [ "${value_write%.*}" -le 15 ]; then
+                    value_write="\e[92m${value_write}${unit_write}\e[0m"
+                elif [ "${value_write%.*}" -le 65 ]; then
+                    value_write="\e[93m${value_write}${unit_write}\e[0m"
+                else
+                    value_write="\e[91m${value_write}${unit_write}\e[0m"
+                fi
             else
                 value_write="${value_write}${unit_write}"
             fi

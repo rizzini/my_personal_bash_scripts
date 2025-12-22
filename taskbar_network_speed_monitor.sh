@@ -1,49 +1,5 @@
 #!/bin/bash
-# script it not detecting ppp0 activity at the moment
-if [[ "$1" == "loop" && -z "$2" ]]; then
-    loop_mode=1
-    shopt -s nullglob 2>/dev/null
-    ttymods=(/dev/ttyUSB*)
-    if ((${#ttymods[@]} > 0)); then
-        if ip link show ppp0 >/dev/null 2>&1; then
-            interface="ppp0"
-        else
-            first_ppp=$(ls /sys/class/net 2>/dev/null | grep '^ppp' | head -n1 )
-            if [[ -n "$first_ppp" ]]; then
-                interface="$first_ppp"
-            else
-                interface=""
-            fi
-        fi
-    else
-        interface=$(awk -F: 'NR>2 { gsub(/^ +| +$/, "", $1); if ($1 != "lo") print $1 }' /proc/net/dev | head -n1)
-    fi
-else
-    interface="${1:-}"
-    if [[ -z "$interface" || "$interface" == "loop" ]]; then
-        shopt -s nullglob 2>/dev/null
-        ttymods=(/dev/ttyUSB*)
-        if ((${#ttymods[@]} > 0)); then
-            if ip link show ppp0 >/dev/null 2>&1; then
-                interface="ppp0"
-            else
-                first_ppp=$(ls /sys/class/net 2>/dev/null | grep '^ppp' | head -n1 )
-                if [[ -n "$first_ppp" ]]; then
-                    interface="$first_ppp"
-                else
-                    interface=""
-                fi
-            fi
-        else
-            interface=$(awk -F: 'NR>2 { gsub(/^ +| +$/, "", $1); if ($1 != "lo") print $1 }' /proc/net/dev | head -n1)
-        fi
-    fi
-    loop_mode=0
-    if [[ "$2" == "loop" ]]; then
-        loop_mode=1
-    fi
-fi
-interface=enp1s0
+interface='enp1s0'
 unit_mode=2
 if [[ "$2" == "loop" ]]; then
     loop_mode=1
@@ -108,11 +64,11 @@ colorize_speed() {
     local value
     value=$(echo "$speed_str" | awk -F'MB/s' '{print $1}')
     value=$(echo "$value" | tr ',' '.' | xargs)
-    if (( $(echo "$value >= 2 && $value <= 10" | bc -l) )); then
+    if (( $(echo "$value >= 2 && $value <= 6" | bc -l) )); then
         echo -e "${color_green}${speed_str}${color_reset}"
-    elif (( $(echo "$value >= 10 && $value <= 30" | bc -l) )); then
+    elif (( $(echo "$value >= 6 && $value <= 10" | bc -l) )); then
         echo -e "${color_yellow}${speed_str}${color_reset}"
-    elif (( $(echo "$value > 30" | bc -l) )); then
+    elif (( $(echo "$value > 10" | bc -l) )); then
         echo -e "${color_red}${speed_str}${color_reset}"
     else
         echo "$speed_str"

@@ -19,9 +19,9 @@ if ! wget -q https://raw.githubusercontent.com/Digitalone1/EasyEffects-Presets/m
 fi
 
 # Compara o arquivo baixado com o existente
-if ! diff -q "$temp_file" /home/lucas/.config/easyeffects/output/LoudnessEqualizer.json &> /dev/null; then
+if ! diff -q "$temp_file" /home/lucas/.local/share/easyeffects/output/LoudnessEqualizer.json &> /dev/null; then
     # Substitui o arquivo existente
-    if mv -f "$temp_file" /home/lucas/.config/easyeffects/output/LoudnessEqualizer.json; then
+    if mv -f "$temp_file" /home/lucas/.local/share/easyeffects/output/LoudnessEqualizer.json; then
         /usr/bin/notify-send -u normal 'LoudnessEqualizer atualizado para a versão mais recente';
     else
         /usr/bin/notify-send -u critical 'Erro ao atualizar o LoudnessEqualizer';
