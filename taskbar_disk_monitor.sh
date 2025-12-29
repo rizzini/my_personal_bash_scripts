@@ -213,15 +213,114 @@ display_data() {
     fi
     echo -ne "$output"
 }
-if [ "$2" == 'loop' ]; then
-    interval=${3:-1}
+show_help() {
+    cat <<'EOF'
+Uso: taskbar_disk_monitor.sh [OPÇÕES] [DISPOSITIVO] [loop [INTERVAL]]
+
+Opções:
+  -h, --help          Mostra esta ajuda e sai
+  -u, --unit N        Força unidade: 1=KB/s, 2=MB/s, 3=Auto (aceita também 'kb','mb','auto'; padrão: 2)
+  --interval N        Define intervalo em segundos ao usar 'loop' (padrão: 1)
+
+Argumentos posicionais:
+  DISPOSITIVO         Nome do dispositivo a exibir (ex: sda). Se omitido, exibe todos.
+  --loop                Executa em modo contínuo (requer INTERVAL opcional)
+
+Exemplos:
+  ./taskbar_disk_monitor.sh                       # exibe todos os discos (uma vez)
+  ./taskbar_disk_monitor.sh sda                   # exibe apenas o sda (uma vez)
+  ./taskbar_disk_monitor.sh -u 1                  # força saída em KB/s (equivalente a '--unit 1')
+  ./taskbar_disk_monitor.sh -sda -unit=mb          # força saída em MB/s usando '--unit=mb'
+  ./taskbar_disk_monitor.sh --unit=auto           # modo automático (usa KB/s ou MB/s conforme valor)
+  ./taskbar_disk_monitor.sh --loop 2                # atualiza todos os discos a cada 2s (usando 'loop N')
+  ./taskbar_disk_monitor.sh --loop --interval 2     # atualiza todos os discos a cada 2s (usando '--interval N')
+  ./taskbar_disk_monitor.sh sda --loop --interval=1 # atualiza sda a cada 1s (usando '--interval=1')
+  ./taskbar_disk_monitor.sh sda --loop 1            # atualiza sda a cada 1s (usando 'loop N')
+  ./taskbar_disk_monitor.sh --unit=kb sda --loop 1  # combina opções (ordem dos argumentos é flexível)
+
+Notas:
+  - As cores indicam atividade recente: verde(>4), amarelo(>15), vermelho(>65) MB/s
+EOF
+}
+
+loop_mode=false
+interval=1
+specified_disk=""
+
+ARGS=("$@")
+if [ ${#ARGS[@]} -eq 0 ]; then
+    show_help
+    exit 0
+fi
+arg_index=0
+while [ $arg_index -lt ${#ARGS[@]} ]; do
+    arg="${ARGS[$arg_index]}"
+    case "$arg" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -u|--unit|--unit=*)
+            if [[ "$arg" == --unit=* ]]; then
+                val="${arg#--unit=}"
+            else
+                arg_index=$((arg_index+1))
+                val="${ARGS[$arg_index]:-}"
+            fi
+
+            if [ -z "$val" ]; then
+                echo "Erro: argumento para $arg está faltando" >&2
+                exit 1
+            fi
+
+            case "${val,,}" in
+                1|kb)
+                    unit_mode=1
+                    ;;
+                2|mb)
+                    unit_mode=2
+                    ;;
+                3|auto)
+                    unit_mode=3
+                    ;;
+                *)
+                    echo "Erro: valor inválido para --unit: '$val'. Use 1|2|3 ou kb|mb|auto" >&2
+                    exit 1
+                    ;;
+            esac
+            ;;
+        --interval)
+            arg_index=$((arg_index+1))
+            interval="${ARGS[$arg_index]:-1}"
+            ;;
+        --interval=*)
+            interval="${arg#*=}"
+            ;;
+        --loop)
+            loop_mode=true
+            next="${ARGS[$((arg_index+1))]:-}"
+            if [[ "$next" =~ ^[0-9]+$ ]]; then
+                interval="$next"
+                arg_index=$((arg_index+1))
+            fi
+            ;;
+        *)
+            if [[ -z "$specified_disk" ]]; then
+                specified_disk="$arg"
+            fi
+            ;;
+    esac
+    arg_index=$((arg_index+1))
+done
+
+if [ "$loop_mode" = true ]; then
     while true; do
         collect_data
-        output=$(display_data "$1")
+        output=$(display_data "$specified_disk")
         printf "\r$output"
         sleep "$interval"
     done
 else
     collect_data
-    display_data "$1"
+    display_data "$specified_disk"
 fi

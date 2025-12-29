@@ -105,6 +105,8 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 **Changelog:**
 - 22/12/2025 — Alert threshold changed to a per-sample delta of **4096** (≈4 MB for the default sample); this makes the monitor more sensitive to moderate activity.
 - 22/12/2025 — Graduated colorization applied to recent alerts: green (4–14), yellow (15–64), red (≥65). Colors apply independently to reads and writes for clearer per-direction visibility.
+- 29/12/2025 — Added support for long options and flexible argument forms: `--unit` / `--unit=VALUE` (also `-u VALUE`), `--interval` / `--interval=VALUE`, and `--loop` (numeric interval may follow `--loop` or be specified via `--interval`). The argument parser was updated to accept `--unit=VALUE` without adding a separate `case` branch to keep the code clean and continues to validate `1|2|3` or `kb|mb|auto`.
+- 29/12/2025 — Added in-script help and examples to document all supported forms (`--unit=VALUE`, `--unit VALUE`, `--interval=VALUE`, `--loop`, etc.), and the script now shows the help message when invoked with no arguments for easier discovery.
 
 
 ---
