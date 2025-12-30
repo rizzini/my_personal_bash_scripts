@@ -84,14 +84,30 @@ Monitors disk read and write speeds with high precision for all disks or a speci
 - Allows customization of the update interval when running in loop mode.
 
 **Arguments:**  
-- `[disk_name]`: *(Optional)* Show stats for a specific disk (e.g., `sda`).
-- `all`: Show stats for all disks.
-- `loop`: Continuously update stats (use with `disk_name` or `all`).
-- `[interval]`: *(Optional, used with `loop`)* Interval in seconds between updates (default: 1).
+- `-h`, `--help` : Show help and exit.
+- `-u N`, `--unit N`, `--unit=VALUE` : Force the display unit; accepts `1`/`kb` (KB/s), `2`/`mb` (MB/s), `3`/`auto` (auto-select KB/MB). Case-insensitive. Default: `2` (MB/s).
+- `--interval N`, `--interval=VALUE` : Set the interval in seconds when in continuous mode.
+- `--loop [N]` : Run in continuous mode; a numeric N can be provided immediately after `--loop` or via `--interval` to set the interval.
+- `-d`, `--device` : Device name to display (e.g., `sda`). Use this option to target a single device. As a shortcut you can pass `all` as the only argument to show all devices.
 
 **Examples:**  
-- `./taskbar_disk_monitor.sh sda` — Show stats for disk `sda` once. 
-- `./taskbar_disk_monitor.sh all loop 2` — Show stats for all disks, updating every 2 seconds. 
+- `# Show a specific device`
+- `./taskbar_disk_monitor.sh -d sda`
+- `./taskbar_disk_monitor.sh --device=sda`
+
+- `# Force unit: KB/MB/Auto`
+- `./taskbar_disk_monitor.sh -u kb -d sda`
+- `./taskbar_disk_monitor.sh --unit=mb --device=sda`
+- `./taskbar_disk_monitor.sh --unit=auto --device=sda`
+
+- `# Continuous mode (loop)`
+- `./taskbar_disk_monitor.sh --loop`           — loop with default interval (1s), shows all devices
+- `./taskbar_disk_monitor.sh --loop 2`         — loop with a 2-second interval
+- `./taskbar_disk_monitor.sh --loop --interval 2`
+- `./taskbar_disk_monitor.sh -d sda --loop 1`  — loop showing only `sda`
+
+- `# Shortcut to show all devices`
+- `./taskbar_disk_monitor.sh all`
 
 **Output:**  
 - Displays read and write speeds in KB/s or MB/s for the selected disk(s).

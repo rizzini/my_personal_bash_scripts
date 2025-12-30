@@ -48,7 +48,7 @@ collect_data() {
 display_data() {
     local output=""
     local use_mb read_kb write_kb read_integer read_fraction write_integer write_fraction
-    if [ "$1" == 'all' ]; then
+    if [ -z "$1" ] || [ "$1" == 'all' ]; then
         for disk in "${disk_list[@]}"; do
             case "$unit_mode" in
                 1)
@@ -215,33 +215,43 @@ display_data() {
 }
 show_help() {
     cat <<'EOF'
-Uso: taskbar_disk_monitor.sh [OPÇÕES] [DISPOSITIVO] [loop [INTERVAL]]
+Usage: taskbar_disk_monitor.sh [OPTIONS] [--loop [INTERVAL]]
 
-Opções:
-  -h, --help          Mostra esta ajuda e sai
-  -u, --unit N        Força unidade: 1=KB/s, 2=MB/s, 3=Auto (aceita também 'kb','mb','auto'; padrão: 2)
-  --interval N        Define intervalo em segundos ao usar 'loop' (padrão: 1)
+Options:
+  -h, --help                 Show this help
+  -u, --unit N               Force unit: 1=KB/s, 2=MB/s, 3=Auto (also accepts 'kb','mb','auto'; default: 2)
+  -d, --device DEVICE        Specify the device to display (ex: sda). Use 'all' to show all devices.
 
-Argumentos posicionais:
-  DISPOSITIVO         Nome do dispositivo a exibir (ex: sda). Se omitido, exibe todos.
-  --loop                Executa em modo contínuo (requer INTERVAL opcional)
+Additional arguments:
+  --loop                     Run in continuous mode (optional INTERVAL). Can be used alone for the default 1 second interval; in that case, it shows all devices (all).
+  --interval N               Set the interval in seconds for loop mode (default: 1)
 
-Exemplos:
-  ./taskbar_disk_monitor.sh                       # exibe todos os discos (uma vez)
-  ./taskbar_disk_monitor.sh sda                   # exibe apenas o sda (uma vez)
-  ./taskbar_disk_monitor.sh -u 1                  # força saída em KB/s (equivalente a '--unit 1')
-  ./taskbar_disk_monitor.sh -sda -unit=mb          # força saída em MB/s usando '--unit=mb'
-  ./taskbar_disk_monitor.sh --unit=auto           # modo automático (usa KB/s ou MB/s conforme valor)
-  ./taskbar_disk_monitor.sh --loop 2                # atualiza todos os discos a cada 2s (usando 'loop N')
-  ./taskbar_disk_monitor.sh --loop --interval 2     # atualiza todos os discos a cada 2s (usando '--interval N')
-  ./taskbar_disk_monitor.sh sda --loop --interval=1 # atualiza sda a cada 1s (usando '--interval=1')
-  ./taskbar_disk_monitor.sh sda --loop 1            # atualiza sda a cada 1s (usando 'loop N')
-  ./taskbar_disk_monitor.sh --unit=kb sda --loop 1  # combina opções (ordem dos argumentos é flexível)
+Note:
+  Positional arguments are not accepted to specify devices; use -d|--device. As a shortcut you can use `all` as the only argument to show all devices.
 
-Notas:
-  - As cores indicam atividade recente: verde(>4), amarelo(>15), vermelho(>65) MB/s
+Examples:
+  # Show a specific device
+  ./taskbar_disk_monitor.sh -d sda
+  ./taskbar_disk_monitor.sh --device=sda
+
+  # Force unit: KB/MB/Auto
+  ./taskbar_disk_monitor.sh -u kb -d sda
+  ./taskbar_disk_monitor.sh --unit=mb --device=sda
+  ./taskbar_disk_monitor.sh --unit=auto --device=sda
+
+  # Continuous mode (loop)
+  ./taskbar_disk_monitor.sh --loop           # loop with default interval (1s), shows all devices
+  ./taskbar_disk_monitor.sh --loop 2         # loop with a 2-second interval
+  ./taskbar_disk_monitor.sh --loop --interval 2
+  ./taskbar_disk_monitor.sh -d sda --loop 1  # loop showing only 'sda'
+
+  # Shortcut to show all devices
+  ./taskbar_disk_monitor.sh all
+
+Notes:
+  - Colors indicate recent activity: green(>4), yellow(>15), red(>65) MB/s
 EOF
-}
+} 
 
 loop_mode=false
 interval=1
@@ -269,7 +279,7 @@ while [ $arg_index -lt ${#ARGS[@]} ]; do
             fi
 
             if [ -z "$val" ]; then
-                echo "Erro: argumento para $arg está faltando" >&2
+                echo "Error: missing argument for $arg" >&2
                 exit 1
             fi
 
@@ -284,10 +294,25 @@ while [ $arg_index -lt ${#ARGS[@]} ]; do
                     unit_mode=3
                     ;;
                 *)
-                    echo "Erro: valor inválido para --unit: '$val'. Use 1|2|3 ou kb|mb|auto" >&2
+                    echo "Error: invalid value for --unit: '$val'. Use 1|2|3 or kb|mb|auto" >&2
                     exit 1
                     ;;
             esac
+            ;;
+        -d|--device|--device=*)
+            if [[ "$arg" == --device=* ]]; then
+                val="${arg#--device=}"
+            else
+                arg_index=$((arg_index+1))
+                val="${ARGS[$arg_index]:-}"
+            fi
+
+            if [ -z "$val" ]; then
+                echo "Error: missing argument for $arg" >&2
+                exit 1
+            fi
+
+            specified_disk="$val"
             ;;
         --interval)
             arg_index=$((arg_index+1))
@@ -305,8 +330,11 @@ while [ $arg_index -lt ${#ARGS[@]} ]; do
             fi
             ;;
         *)
-            if [[ -z "$specified_disk" ]]; then
-                specified_disk="$arg"
+            if [[ "$arg" == "all" ]]; then
+                specified_disk="all"
+            else
+                echo "Unrecognized command; use -d|--device to specify a device" >&2
+                exit 1
             fi
             ;;
     esac
