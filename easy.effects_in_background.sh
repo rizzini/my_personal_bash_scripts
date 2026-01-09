@@ -2,5 +2,5 @@
 if pgrep -x easyeffects; then
     pkill -x easyeffects
 else
-    easyeffects --gapplication-service &
+    easyeffects --hide-window --service-mode &
 fi

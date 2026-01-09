@@ -83,15 +83,12 @@ MATCH_PIDS=( $(printf '%s\n' "$ps_source" | awk -v search="$SEARCH" '
     BEGIN{IGNORECASE=1}
     {
         pid=$1; ppid=$2; comm=$3;
-        # rebuild cmd from remaining fields (4..)
         cmd=""; for(i=4;i<=NF;i++){ cmd = cmd (i==4?"":" ") $i }
         procs[pid] = pid " " ppid " " comm " " cmd;
         children[ppid] = children[ppid] " " pid;
-        # if comm or cmd contains the search substring, mark as root
         if (index(tolower(comm), search) || index(tolower(cmd), search)) roots[pid]=1;
     }
     END{
-        # BFS from each root to collect descendants
         PROCSEP=" ";
         for (r in roots) {
             if (seen[r]) continue;

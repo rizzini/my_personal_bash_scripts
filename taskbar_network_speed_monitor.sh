@@ -64,11 +64,11 @@ colorize_speed() {
     local value
     value=$(echo "$speed_str" | awk -F'MB/s' '{print $1}')
     value=$(echo "$value" | tr ',' '.' | xargs)
-    if (( $(echo "$value >= 2 && $value <= 6" | bc -l) )); then
+    if (( $(echo "$value >= 2 && $value <= 25" | bc -l) )); then
         echo -e "${color_green}${speed_str}${color_reset}"
-    elif (( $(echo "$value >= 6 && $value <= 10" | bc -l) )); then
+    elif (( $(echo "$value >= 25 && $value <= 55" | bc -l) )); then
         echo -e "${color_yellow}${speed_str}${color_reset}"
-    elif (( $(echo "$value > 10" | bc -l) )); then
+    elif (( $(echo "$value > 55" | bc -l) )); then
         echo -e "${color_red}${speed_str}${color_reset}"
     else
         echo "$speed_str"
