@@ -1,36 +1,38 @@
 #!/bin/bash
-
 sleep 5
 
 copyq --start-server &
-copyq_exit_code=$?
+pid_copyq=$!
+
+sleep 1
 
 keepassxc &
-keepassxc_exit_code=$?
+pid_keepassxc=$!
+
+sleep 1
 
 easyeffects --hide-window --service-mode &
-easyeffects_exit_code=$?
+pid_easyeffects=$!
 
-while [ $copyq_exit_code -ne 0 ]; do
+sleep 2
+
+while ! pgrep -x copyq; do
     kill -9 $pid_copyq
     copyq --start-server &
     pid_copyq=$!
-    copyq_exit_code=$?
     sleep 2
 done &
 
-while [ $keepassxc_exit_code -ne 0 ]; do
+while ! pgrep -x keepassxc; do
     kill -9 $pid_keepassxc
     keepassxc &
     pid_keepassxc=$!
-    keepassxc_exit_code=$?
     sleep 2
 done &
 
-while [ $easyeffects_exit_code -ne 0 ]; do
+while ! pgrep -x easyeffects; do
     kill -9 $pid_easyeffects
     easyeffects --hide-window --service-mode &
     pid_easyeffects=$!
-    easyeffects_exit_code=$?
     sleep 2
 done &
