@@ -112,7 +112,9 @@ mem_used=$((mem_total - mem_free - buffers - cached - sreclaimable + shmem))
 mem_used_mb=$((mem_used / 1024))
 if ((mem_used_mb >= 1024)); then
     mem_used_gb=$(echo "scale=2; $mem_used_mb / 1024" | bc)
-    if (( $(echo "$mem_used_gb > 5" | bc -l) )); then
+    if (( $(echo "$mem_used_gb > 4.5" | bc -l) )) && (( $(echo "$mem_used_gb < 5" | bc -l) )); then
+        mem_used_gb_colored="\e[93m${mem_used_gb}GB\e[0m"
+    elif (( $(echo "$mem_used_gb > 5" | bc -l) )); then
         mem_used_gb_colored="\e[91m${mem_used_gb}GB\e[0m"
     else
         mem_used_gb_colored="${mem_used_gb}GB"
@@ -123,7 +125,15 @@ fi
 
 output="Mem: $mem_used_gb_colored"
 if [[ "$swaps" == *"/dev/zram0"* ]]; then
-    output="$output / ZRAM: $(adjust_unit "$swap_used_zram_total")"
+    swap_used_zram_total_if=$((swap_used_zram_total - 12000))
+        if [ $swap_used_zram_total_if -gt  700000 ] && [ $swap_used_zram_total_if -lt  1200000 ]; then
+            output="$output / ZRAM: echo \e[93m$(adjust_unit "$swap_used_zram_total")\e[0m"
+        elif [ $swap_used_zram_total_if -gt  1200000 ]; then
+            output="$output / ZRAM: echo \e[91m$(adjust_unit "$swap_used_zram_total")\e[0m"
+        else
+            output="$output / ZRAM: $(adjust_unit "$swap_used_zram_total")"
+        fi
+
     if (( swap_used_disk_total > 0 )); then
         output="$output / Disco: $(adjust_unit "$swap_used_disk_total")"
     fi

@@ -66,9 +66,9 @@ colorize_speed() {
     value=$(echo "$value" | tr ',' '.' | xargs)
     if (( $(echo "$value >= 2 && $value <= 25" | bc -l) )); then
         echo -e "${color_green}${speed_str}${color_reset}"
-    elif (( $(echo "$value >= 25 && $value <= 55" | bc -l) )); then
+    elif (( $(echo "$value >= 25 && $value <= 50" | bc -l) )); then
         echo -e "${color_yellow}${speed_str}${color_reset}"
-    elif (( $(echo "$value > 55" | bc -l) )); then
+    elif (( $(echo "$value > 50" | bc -l) )); then
         echo -e "${color_red}${speed_str}${color_reset}"
     else
         echo "$speed_str"

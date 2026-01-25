@@ -1,20 +1,17 @@
 #!/bin/bash
+
 sleep 5
 
 copyq --start-server &
 pid_copyq=$!
 
-sleep 1
-
 keepassxc &
 pid_keepassxc=$!
-
-sleep 1
 
 easyeffects --hide-window --service-mode &
 pid_easyeffects=$!
 
-sleep 2
+sleep 3
 
 while ! pgrep -x copyq; do
     kill -9 $pid_copyq
