@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 interface='enp1s0'
 unit_mode=2
 if [[ "$2" == "loop" ]]; then

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 swaps=$(< /proc/swaps)
 enable_zram() {
     swapoff -a

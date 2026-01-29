@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#https://bugs.kde.org/show_bug.cgi?id=514039
 sleep 5
 
 copyq --start-server &
