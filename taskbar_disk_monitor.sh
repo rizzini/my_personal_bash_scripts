@@ -2,7 +2,68 @@
 unit_mode=2
 taskbar_mode=false
 declare -A data_read1 data_write1 read_total write_total counter time_alert_read time_alert_write
-declare -a disk_list=()
+declare -a disk_list
+hover() {
+    local mode="$1"
+
+    if [ "$taskbar_mode" == 'true' ]; then
+
+        log_file="/tmp/taskbar_disk_monitor_hover"
+        log_file_final="/tmp/taskbar_disk_monitor_hover_final"
+
+        if [ "$mode" = "read" ]; then
+            current_type="R"
+        elif [ "$mode" = "write" ]; then
+            current_type="W"
+        else
+            return
+        fi
+
+        [ -f "$log_file" ] || touch "$log_file"
+        [ -f "$log_file_final" ] || touch "$log_file_final"
+
+        process="$(sudo iotop -b -n 1 -o -qqq | head -n 1)"
+        if [ -n "$process" ]; then
+
+            current_proc="$(echo "$process" | awk '{print $9}')"
+
+            last_line="$(tail -n 1 "$log_file")"
+            last_type="$(echo "$last_line" | awk '{print $1}')"
+            last_time="$(echo "$last_line" | awk '{print $2}')"
+            last_proc="$(echo "$last_line" | awk '{print $12}')"
+
+            now_epoch=$(date +%s)
+
+            if [ -n "$last_time" ]; then
+                last_epoch=$(date -d "$(date +%F) $last_time" +%s)
+                diff_secs=$((now_epoch - last_epoch))
+            else
+                diff_secs=999
+            fi
+
+            if [ "$current_type" != "$last_type" ] || [ "$current_proc" != "$last_proc" ] || [ "$diff_secs" -gt 3 ]; then
+                if [ "$mode" == "read" ];then
+                    echo "R $(date +%H:%M:%S) - $process" | tee -a "$log_file" &> /dev/null
+                    sed -En '${s@^R[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+M/s .*  ([^ ]+).*@R \1 \3 \2 MB/s@p; s@^R[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+K/s .*  ([^ ]+).*@R \1 \3 \2 KB/s@p}' "$log_file" | tee -a "$log_file_final" &> /dev/null
+                elif [ "$mode" == "write" ];then
+                    echo "W $(date +%H:%M:%S) - $process" | tee -a "$log_file" &> /dev/null
+                    sed -En '${s@^W[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+M/s .*  ([^ ]+).*@W \1 \3 \2 MB/s@p; s@^W[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+K/s .*  ([^ ]+).*@W \1 \3 \2 KB/s@p}' "$log_file" | tee -a "$log_file_final" &> /dev/null
+                fi
+            fi
+
+            if [ "$(wc -l < "$log_file_final")" -gt 10 ]; then
+                tail -n 10 "$log_file_final" > taskbar_disk_monitor_hover_final.tmp && mv taskbar_disk_monitor_hover_final.tmp "$log_file_final"
+            fi
+
+            if [ "$(wc -l < "$log_file")" -gt 10 ]; then
+                tail -n 10 "$log_file" > taskbar_disk_monitor_hover.tmp && mv taskbar_disk_monitor_hover.tmp "$log_file"
+            fi
+        fi
+
+    fi
+}
+
+
 contains() {
     local target="$1"
     shift
@@ -190,32 +251,11 @@ display_data() {
                     value_read="\e[92m${value_read}${unit_read}\e[0m"
                 elif [ "${value_read%.*}" -ge 15 ] && [ "${value_read%.*}" -lt 65 ]; then
                     value_read="\e[93m${value_read}${unit_read}\e[0m"
+                    hover read
                 elif [ "${value_read%.*}" -ge 65 ]; then
                     value_read="\e[91m${value_read}${unit_read}\e[0m"
-
-                    if [ "$taskbar_mode" == 'true' ]; then
-                        log_file="/tmp/taskbar_disk_monitor_hover"
-                        log_file_final="/tmp/taskbar_disk_monitor_hover_final"
-
-                        [ -f "$log_file" ] || touch "$log_file"
-                        [ -f "$log_file_final" ] || touch "$log_file_final"
-
-                        process="$(sudo iotop -b -n 1 -o -qqq | head -n 1)"
-                        if [ -n "$process" ]; then
-                            echo "R $(date +%H:%M:%S) - $process" | tee -a "$log_file" &> /dev/null
-                            sed -En '${s@^R[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+M/s .*  ([^ ]+).*@R \1 \3 \2 MB/s@p; s@^R[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+K/s .*  ([^ ]+).*@R \1 \3 \2 KB/s@p}' "$log_file" | tee -a "$log_file_final" &> /dev/null
-                        fi
-
-                    fi
-
-                    if [ "$(wc -l < "$log_file_final")" -gt 10 ]; then
-                        tail -n 10 "$log_file_final" > taskbar_disk_monitor_hover_final.tmp && mv taskbar_disk_monitor_hover_final.tmp "$log_file_final"
-                    fi
-                    if [ "$(wc -l < "$log_file")" -gt 10 ]; then
-                        tail -n 10 "$log_file" > taskbar_disk_monitor_hover.tmp && mv taskbar_disk_monitor_hover.tmp "$log_file"
-                    fi
+                    hover read
                 fi
-
             else
             value_read="${value_read}${unit_read}"
             fi
@@ -225,35 +265,14 @@ display_data() {
                     value_write="\e[92m${value_write}${unit_write}\e[0m"
                 elif [ "${value_write%.*}" -ge 15 ] && [ "${value_write%.*}" -lt 65 ]; then
                     value_write="\e[93m${value_write}${unit_write}\e[0m"
+                    hover write
                 elif [ "${value_write%.*}" -ge 65 ]; then
                     value_write="\e[91m${value_write}${unit_write}\e[0m"
-
-                    if [ "$taskbar_mode" == 'true' ]; then
-                        log_file="/tmp/taskbar_disk_monitor_hover"
-                        log_file_final="/tmp/taskbar_disk_monitor_hover_final"
-
-                        [ -f "$log_file" ] || touch "$log_file"
-                        [ -f "$log_file_final" ] || touch "$log_file_final"
-
-                        process="$(sudo iotop -b -n 1 -o -qqq | head -n 1)"
-                        if [ -n "$process" ]; then
-                            echo "W $(date +%H:%M:%S) - $process" | tee -a "$log_file" &> /dev/null
-                            sed -En '${s@^W[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+M/s .*  ([^ ]+).*@W \1 \3 \2 MB/s@p; s@^W[[:space:]]+([0-9]{2}:[0-9]{2}):[0-9]{2}[[:space:]]+-[[:space:]]+.* ([0-9.]+)[[:space:]]+K/s .*  ([^ ]+).*@W \1 \3 \2 KB/s@p}' "$log_file" | tee -a "$log_file_final" &> /dev/null
-                        fi
-
-                    fi
-
-                    if [ "$(wc -l < "$log_file_final")" -gt 10 ]; then
-                        tail -n 10 "$log_file_final" > arquivo_final.tmp && mv arquivo_final.tmp "$log_file_final"
-                    fi
-                    if [ "$(wc -l < "$log_file")" -gt 10 ]; then
-                        tail -n 10 "$log_file" > arquivo.tmp && mv arquivo.tmp "$log_file"
-                    fi
+                    hover write
                 fi
             else
                 value_write="${value_write}${unit_write}"
             fi
-
             output="${specified_disk} -> 📄 ${value_read} | 📝 ${value_write}"
         fi
     fi

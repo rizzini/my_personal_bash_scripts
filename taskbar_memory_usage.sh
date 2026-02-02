@@ -127,13 +127,12 @@ output="Mem: $mem_used_gb_colored"
 if [[ "$swaps" == *"/dev/zram0"* ]]; then
     swap_used_zram_total_if=$((swap_used_zram_total - 12000))
         if [ $swap_used_zram_total_if -gt  700000 ] && [ $swap_used_zram_total_if -lt  1200000 ]; then
-            output="$output / ZRAM: echo \e[93m$(adjust_unit "$swap_used_zram_total")\e[0m"
+            output="$output / ZRAM: \e[93m$(adjust_unit "$swap_used_zram_total")\e[0m"
         elif [ $swap_used_zram_total_if -gt  1200000 ]; then
-            output="$output / ZRAM: echo \e[91m$(adjust_unit "$swap_used_zram_total")\e[0m"
+            output="$output / ZRAM: \e[91m$(adjust_unit "$swap_used_zram_total")\e[0m"
         else
             output="$output / ZRAM: $(adjust_unit "$swap_used_zram_total")"
         fi
-
     if (( swap_used_disk_total > 0 )); then
         output="$output / Disco: $(adjust_unit "$swap_used_disk_total")"
     fi
@@ -141,3 +140,5 @@ else
     output="$output / \e[91mOFF\e[0m"
 fi
 printf "%b\n" "$output"
+
+ps -eo comm=,rss= | awk '$1!="plasma-browser-" && $1!="plasmashell" && $1!="kwin_wayland" && $1!="fish" && $1!="ps" && $1 !~ /^kworker\// {mem[$1] += $2} END {for (p in mem) printf "%s -> %.1f MiB\n", p, mem[p]/1024}'| sort -k3 -nr | head -n 5 > "/tmp/taskbar_memory_usage_hover"
