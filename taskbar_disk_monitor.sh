@@ -15,8 +15,6 @@ hover() {
             current_type="R"
         elif [ "$mode" = "write" ]; then
             current_type="W"
-        else
-            return
         fi
 
         [ -f "$log_file" ] || touch "$log_file"
