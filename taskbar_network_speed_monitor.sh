@@ -1,10 +1,10 @@
 #!/bin/sh
 interface='enp1s0'
-unit_mode=2
 
 convert_units() {
-    local is_speed=$1
-    local bytes=$2
+    local unit_mode=$1
+    local is_speed=$2
+    local bytes=$3
     local value unit
     local suffix=""
 
@@ -22,18 +22,13 @@ convert_units() {
             unit="MB"
             ;;
         3)
-            if (( bytes >= 1024*1024 )); then
+            if (( bytes >= 1024*1024*1024 )); then
+                value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024/1024/1024 }")
+                unit="GB"
+            elif (( bytes >= 1024*1024 )); then
                 value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024/1024 }")
                 unit="MB"
-            else
-                value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024 }")
-                unit="KB"
-            fi
-            ;;
-        *)
-            if (( bytes >= 1024*1024 )); then
-                value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024/1024 }")
-                unit="MB"
+
             else
                 value=$(awk "BEGIN { printf \"%.2f\", $bytes/1024 }")
                 unit="KB"
@@ -41,30 +36,26 @@ convert_units() {
             ;;
     esac
     echo "${value}${unit}${suffix}"
-
 }
 
 cache="/tmp/taskbar_network_speed_monitor_$interface"
 hover_interval=1
 if [ "$1" = "hover" ]; then
     now=$(date +%s)
-
     if [ -f "$cache" ]; then
-        read last_ts data < "$cache"
+        read -r last_ts < "$cache"
         if [ $((now - last_ts)) -lt "$hover_interval" ]; then
-            printf '%s\n' "$(printf '%s' "$data" | tr '¦' '\n')"
+            tail -n +2 "$cache"
             exit 0
         fi
     fi
-
     read rx tx <<EOF
 $(awk -v i="$interface" '$1==i":" {print $2, $10}' /proc/net/dev)
 EOF
-
     output="+Total+
-Download: $(convert_units 0 "$rx") | Upload: $(convert_units 0 "$tx")"
+Download: $(convert_units 3 0 "$rx") | Upload: $(convert_units 3 0 "$tx")"
 
-    printf '%s %s\n' "$now" "$(printf '%s' "$output" | tr '\n' '¦')" > "$cache"
+    printf '%s\n%s\n' "$now" "$output" > "$cache"
     printf '%s\n' "$output"
     exit 0
 fi
@@ -109,18 +100,16 @@ main() {
     IFS=' ' read -r rx1 tx1 <<< "$(get_data "$interface")"
     sleep 1
     IFS=' ' read -r rx2 tx2 <<< "$(get_data "$interface")"
+
     rx_original=$((rx2 - rx1))
     tx_original=$((tx2 - tx1))
-    rx_converted=$(convert_units 1 "$rx_original")
-    tx_converted=$(convert_units 1 "$tx_original")
-    if [[ "$unit_mode" -eq 2 || "$unit_mode" -eq 3 ]]; then
-        if [[ "$rx_converted" == *"MB/s" ]]; then
-            rx_converted=$(colorize_speed "$rx_converted")
-        fi
-        if [[ "$tx_converted" == *"MB/s" ]]; then
-            tx_converted=$(colorize_speed "$tx_converted")
-        fi
-    fi
+
+    rx_converted=$(convert_units 2 1 "$rx_original")
+    tx_converted=$(convert_units 2 1 "$tx_original")
+
+    rx_converted=$(colorize_speed "$rx_converted")
+    tx_converted=$(colorize_speed "$tx_converted")
+
     echo -e " $rx_converted |  $tx_converted"
 }
 
