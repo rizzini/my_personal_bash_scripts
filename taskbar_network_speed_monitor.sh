@@ -37,6 +37,20 @@ convert_units() {
     esac
     echo "${value}${unit}${suffix}"
 }
+format_uptime() {
+    local up total_days hours minutes
+    up=$(cut -d. -f1 /proc/uptime)
+
+    total_days=$((up / 86400))
+    hours=$(((up % 86400) / 3600))
+    minutes=$(((up % 3600) / 60))
+
+    if [ "$total_days" -gt 0 ]; then
+        printf "%dd %02dh %02dm" "$total_days" "$hours" "$minutes"
+    else
+        printf "%02dh %02dm" "$hours" "$minutes"
+    fi
+}
 
 cache="/tmp/taskbar_network_speed_monitor_$interface"
 hover_interval=1
@@ -52,7 +66,9 @@ if [ "$1" = "hover" ]; then
     read rx tx <<EOF
 $(awk -v i="$interface" '$1==i":" {print $2, $10}' /proc/net/dev)
 EOF
-    output="+Total+
+    uptime_str=$(format_uptime)
+
+    output="+Total+ | Uptime: $uptime_str
 Download: $(convert_units 3 0 "$rx") | Upload: $(convert_units 3 0 "$tx")"
 
     printf '%s\n%s\n' "$now" "$output" > "$cache"

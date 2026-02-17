@@ -4,12 +4,9 @@ enable_zram() {
     swapoff -a
     echo 0 > /sys/module/zswap/parameters/enabled
     if ! lsmod | grep -q "^zram"; then
-        sleep 1
         modprobe zram num_devices=1 max_comp_streams=4
-        sleep 1
     fi
-#   echo /dev/sda8 > /sys/block/zram0/backing_dev # ainda não sei se vale a pena usar 'backing_dev'
-    echo lzo > /sys/block/zram0/comp_algorithm
+    echo zstd > /sys/block/zram0/comp_algorithm
     echo 6G > /sys/block/zram0/disksize
     mkswap -U clear /dev/zram0
     swapon --discard --priority 100 /dev/zram0
