@@ -1,5 +1,5 @@
 #!/bin/bash
-TARGET_VOL=1.50
+TARGET_VOL=1.42
 VOL_PCT=$(awk -v v="$TARGET_VOL" 'BEGIN{printf "%.0f%%", v*100}')
 
 VOL_EPS=0.005

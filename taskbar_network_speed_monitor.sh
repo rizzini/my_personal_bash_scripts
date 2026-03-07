@@ -1,6 +1,23 @@
 #!/bin/sh
 interface='enp1s0'
 
+if [ "$1" == 'click' ]; then
+
+    current="$(ip route show default | awk '{print $3}')"
+    old="$(cat /home/lucas/scripts/taskbar_change_route_isp.txt)"
+
+    if [ "$current" != "$old" ]; then
+        if [ "$current" = '192.168.1.1' ]; then
+            sudo ip route del default via 192.168.1.1
+            sudo ip route add default via 192.168.15.1
+        elif [ "$current" = '192.168.15.1' ]; then
+            sudo ip route del default via 192.168.15.1
+            sudo ip route add default via 192.168.1.1
+        fi
+        echo "$current" > /home/lucas/scripts/taskbar_change_route_isp.txt
+    fi
+fi
+
 convert_units() {
     local unit_mode=$1
     local is_speed=$2
@@ -66,9 +83,17 @@ if [ "$1" = "hover" ]; then
     read rx tx <<EOF
 $(awk -v i="$interface" '$1==i":" {print $2, $10}' /proc/net/dev)
 EOF
+
     uptime_str=$(format_uptime)
 
-    output="+Total+ | Uptime: $uptime_str
+    route="$(ip route show default | awk '{print $3}')"
+    if [ "$route" == '192.168.1.1' ]; then
+        ISP_str='TIM'
+    else
+        ISP_str='VIVO'
+    fi
+
+    output="+Total+ | Uptime: $uptime_str | ISP: $ISP_str
 Download: $(convert_units 3 0 "$rx") | Upload: $(convert_units 3 0 "$tx")"
 
     printf '%s\n%s\n' "$now" "$output" > "$cache"
