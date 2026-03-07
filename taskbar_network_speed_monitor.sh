@@ -1,23 +1,28 @@
-#!/bin/sh
+#!/bin/bash
 interface='enp1s0'
-
-if [ "$1" == 'click' ]; then
+history_file='/home/lucas/scripts/taskbar_change_route_isp.txt'
+history_file_boot='/home/lucas/scripts/taskbar_change_route_isp_boot.txt'
+if [ "$1" == 'startup_apply_last_used_route' ]; then
+    history="$(< "$history_file_boot")"
+    ip route add default via "$history"
+    exit
+elif [ "$1" == 'click' ]; then
 
     current="$(ip route show default | awk '{print $3}')"
-    old="$(cat /home/lucas/scripts/taskbar_change_route_isp.txt)"
+    old="$(< "$history_file")"
 
     if [ "$current" != "$old" ]; then
         if [ "$current" = '192.168.1.1' ]; then
-            sudo ip route del default via 192.168.1.1
-            sudo ip route add default via 192.168.15.1
+            sudo ip route replace default via 192.168.15.1
         elif [ "$current" = '192.168.15.1' ]; then
-            sudo ip route del default via 192.168.15.1
-            sudo ip route add default via 192.168.1.1
+            sudo ip route replace default via 192.168.1.1
         fi
-        echo "$current" > /home/lucas/scripts/taskbar_change_route_isp.txt
+        echo "$current" > "$history_file"
+        echo "$old" > "$history_file_boot"
     fi
+    exit
 fi
-
+#salvar no historio a rota para bootar
 convert_units() {
     local unit_mode=$1
     local is_speed=$2
