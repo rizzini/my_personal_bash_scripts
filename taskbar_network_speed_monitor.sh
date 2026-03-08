@@ -1,7 +1,7 @@
 #!/bin/bash
 interface='enp1s0'
-history_file='/home/lucas/scripts/taskbar_change_route_isp.txt'
-history_file_boot='/home/lucas/scripts/taskbar_change_route_isp_boot.txt'
+history_file='/home/lucas/scripts/.taskbar_change_route_isp.txt'
+history_file_boot='/home/lucas/scripts/.taskbar_change_route_isp_boot.txt'
 if [ "$1" == 'startup_apply_last_used_route' ]; then
     history="$(< "$history_file_boot")"
     ip route add default via "$history"
@@ -22,7 +22,7 @@ elif [ "$1" == 'click' ]; then
     fi
     exit
 fi
-#salvar no historio a rota para bootar
+
 convert_units() {
     local unit_mode=$1
     local is_speed=$2
