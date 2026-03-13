@@ -1,24 +1,44 @@
 #!/bin/bash
 interface='enp1s0'
+
 history_file='/home/lucas/scripts/.taskbar_change_route_isp.txt'
 history_file_boot='/home/lucas/scripts/.taskbar_change_route_isp_boot.txt'
+new_route_tmp="/tmp/getting_new_route.tmp"
+
+
 if [ "$1" == 'startup_apply_last_used_route' ]; then
     history="$(< "$history_file_boot")"
-    ip route add default via "$history"
+    ip route replace default via "$history"
     exit
 elif [ "$1" == 'click' ]; then
 
     current="$(ip route show default | awk '{print $3}')"
     old="$(< "$history_file")"
 
-    if [ "$current" != "$old" ]; then
+    if [ "$current" != "$old" ] || [ -f "$new_route_tmp" ]; then
         if [ "$current" = '192.168.1.1' ]; then
             sudo ip route replace default via 192.168.15.1
+            echo "$current" > "$history_file"
+            echo "$old" > "$history_file_boot"
+
         elif [ "$current" = '192.168.15.1' ]; then
             sudo ip route replace default via 192.168.1.1
+            echo "$current" > "$history_file"
+            echo "$old" > "$history_file_boot"
+
+        elif [ -f "$new_route_tmp" ]; then
+            if [ "$old" = '192.168.1.1' ]; then
+                sudo ip route replace default via '192.168.15.1'
+                rm -f "$new_route_tmp"
+
+            elif [ "$old" = '192.168.15.1' ]; then
+                sudo ip route replace default via '192.168.1.1'
+                rm -f "$new_route_tmp"
+
+            fi
+
         fi
-        echo "$current" > "$history_file"
-        echo "$old" > "$history_file_boot"
+
     fi
     exit
 fi
@@ -94,8 +114,17 @@ EOF
     route="$(ip route show default | awk '{print $3}')"
     if [ "$route" == '192.168.1.1' ]; then
         ISP_str='TIM'
-    else
+    elif [ "$route" == '192.168.15.1' ]; then
         ISP_str='VIVO'
+    elif [ -z "$route" ]; then
+        ISP_str="NO ROUTE"
+        if [ ! -f '/tmp/getting_new_route.tmp' ];then
+            touch "/tmp/getting_new_route.tmp"
+            bash "$0" 'click' #get new route
+
+        fi
+    else
+        ISP_str='UNKOWN'
     fi
 
     output="+Total+ | Uptime: $uptime_str | ISP: $ISP_str
