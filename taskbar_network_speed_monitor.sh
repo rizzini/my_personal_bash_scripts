@@ -1,6 +1,8 @@
 #!/bin/bash
 interface='enp1s0'
 
+if_status="$(ip a show "$interface" | awk 'NR == 1 {print $9; exit}')"
+
 history_file='/home/lucas/scripts/.taskbar_change_route_isp.txt'
 history_file_boot='/home/lucas/scripts/.taskbar_change_route_isp_boot.txt'
 new_route_tmp="/tmp/getting_new_route.tmp"
@@ -30,10 +32,12 @@ elif [ "$1" == 'click' ]; then
             if [ "$old" = '192.168.1.1' ]; then
                 sudo ip route replace default via '192.168.15.1'
                 rm -f "$new_route_tmp"
+                notify-send -i network-wired "Rede" "Rota restabelecida usando script taskbar_network_speed_monitor.sh"
 
             elif [ "$old" = '192.168.15.1' ]; then
                 sudo ip route replace default via '192.168.1.1'
                 rm -f "$new_route_tmp"
+                notify-send -i network-wired "Rede" "Rota restabelecida usando script taskbar_network_speed_monitor.sh"
 
             fi
 
@@ -116,6 +120,8 @@ EOF
         ISP_str='TIM'
     elif [ "$route" == '192.168.15.1' ]; then
         ISP_str='VIVO'
+    elif [ "$if_status" != 'UP' ]; then
+        ISP_str="$interface DOWN"
     elif [ -z "$route" ]; then
         ISP_str="NO ROUTE"
         if [ ! -f '/tmp/getting_new_route.tmp' ];then
@@ -185,7 +191,11 @@ main() {
     rx_converted=$(colorize_speed "$rx_converted")
     tx_converted=$(colorize_speed "$tx_converted")
 
-    echo -e " $rx_converted |  $tx_converted"
+    if [ "$if_status" != 'UP' ]; then
+        echo -e "\e[95m\033[1m${interface} DOWN\e[0m"
+    else
+        echo -e " $rx_converted |  $tx_converted"
+    fi
 }
 
 if [[ "$loop_mode" -eq 1 ]]; then

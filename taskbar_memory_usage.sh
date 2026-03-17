@@ -51,7 +51,7 @@ adjust_unit() {
 
     if [[ "${units[unit]}" == "GB" ]]; then
         value_gb=$(echo "scale=2; $original_value / ($scale ^ $unit)" | bc)
-        echo -e "\e[91m${value_gb}${units[unit]}\e[0m"
+        echo "${value_gb}${units[unit]}"
     else
         echo "${value}${units[unit]}"
     fi
@@ -95,9 +95,9 @@ fi
 output="Mem: $mem_used_gb_colored"
 if [[ "$swaps" == *"/dev/zram0"* ]]; then
     swap_used_zram_total_if=$((swap_used_zram_total - 12000))
-        if [ $swap_used_zram_total_if -gt  700000 ] && [ $swap_used_zram_total_if -lt  1200000 ]; then
+        if [ $swap_used_zram_total_if -gt  1048576 ] && [ $swap_used_zram_total_if -lt  2097152 ]; then
             output="$output / ZRAM: \e[93m$(adjust_unit "$swap_used_zram_total")\e[0m"
-        elif [ $swap_used_zram_total_if -gt  1200000 ]; then
+        elif [ $swap_used_zram_total_if -gt  2097152 ]; then
             output="$output / ZRAM: \e[91m$(adjust_unit "$swap_used_zram_total")\e[0m"
         else
             output="$output / ZRAM: $(adjust_unit "$swap_used_zram_total")"
