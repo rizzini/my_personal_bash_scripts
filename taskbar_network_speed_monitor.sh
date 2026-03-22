@@ -109,9 +109,7 @@ if [ "$1" = "hover" ]; then
             exit 0
         fi
     fi
-    read rx tx <<EOF
-$(awk -v i="$interface" '$1==i":" {print $2, $10}' /proc/net/dev)
-EOF
+   read -r rx tx < <(awk -v i="$interface" '$1==i":" {print $2, $10}' /proc/net/dev)
 
     uptime_str=$(format_uptime)
 
@@ -177,33 +175,21 @@ colorize_speed() {
     fi
 }
 
-main() {
-    IFS=' ' read -r rx1 tx1 <<< "$(get_data "$interface")"
-    sleep 1
-    IFS=' ' read -r rx2 tx2 <<< "$(get_data "$interface")"
+IFS=' ' read -r rx1 tx1 <<< "$(get_data "$interface")"
+sleep 1
+IFS=' ' read -r rx2 tx2 <<< "$(get_data "$interface")"
 
-    rx_original=$((rx2 - rx1))
-    tx_original=$((tx2 - tx1))
+rx_original=$((rx2 - rx1))
+tx_original=$((tx2 - tx1))
 
-    rx_converted=$(convert_units 2 1 "$rx_original")
-    tx_converted=$(convert_units 2 1 "$tx_original")
+rx_converted=$(convert_units 2 1 "$rx_original")
+tx_converted=$(convert_units 2 1 "$tx_original")
 
-    rx_converted=$(colorize_speed "$rx_converted")
-    tx_converted=$(colorize_speed "$tx_converted")
+rx_converted=$(colorize_speed "$rx_converted")
+tx_converted=$(colorize_speed "$tx_converted")
 
-    if [ "$if_status" != 'UP' ]; then
-        echo -e "\e[95m\033[1m${interface} DOWN\e[0m"
-    else
-        echo -e " $rx_converted |  $tx_converted"
-    fi
-}
-
-if [[ "$loop_mode" -eq 1 ]]; then
-    while true; do
-        main
-        sleep 1
-    done
+if [ "$if_status" != 'UP' ]; then
+    echo -e "\e[95m\033[1m${interface} DOWN\e[0m"
 else
-    main
+    echo -e " $rx_converted |  $tx_converted"
 fi
-
