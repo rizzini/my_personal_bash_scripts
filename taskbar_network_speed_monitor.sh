@@ -10,7 +10,21 @@ new_route_tmp="/tmp/getting_new_route.tmp"
 
 if [ "$1" == 'startup_apply_last_used_route' ]; then
     history="$(< "$history_file_boot")"
+
+    # Configuração da tabela TIM
+    ip route add 192.168.1.0/24 dev "$interface" table tim
+    ip route add default via 192.168.1.1 table tim
+
+    # Configuração da tabela VIVO
+    ip route add 192.168.15.0/24 dev "$interface" table vivo
+    ip route add default via 192.168.15.1 table vivo
+
+    #Policy Rules
+    ip rule add from 192.168.1.141 table tim
+    ip rule add from 192.168.15.199 table vivo
+
     ip route replace default via "$history"
+
     exit
 elif [ "$1" == 'click' ]; then
 
