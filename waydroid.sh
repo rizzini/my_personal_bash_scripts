@@ -7,9 +7,9 @@ set -x
 
 notify() {
     if [ "$2" == critical ]; then
-        sudo -u lucas XDG_RUNTIME_DIR=/run/user/$(id -u lucas) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u lucas)/bus systemd-run --user --scope notify-send -u critical "$1"
+        sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus systemd-run --user --scope notify-send -u critical "$1"
     elif [ -z "$2" ]; then
-        sudo -u lucas XDG_RUNTIME_DIR=/run/user/$(id -u lucas) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u lucas)/bus systemd-run --user --scope notify-send "$1"
+        sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus systemd-run --user --scope notify-send "$1"
     fi
 }
 
@@ -27,17 +27,39 @@ copy_userdata_to_mem() {
     total=$((size1 + size2))
 
     (
-        pv -n -s "$total" "$src1" > "$dest/system.img"
-        [ ${PIPESTATUS[0]} -ne 0 ] && error=1
-        pv -n -s "$total" "$src2" > "$dest/vendor.img"
-        [ ${PIPESTATUS[0]} -ne 0 ] && error=1
-    ) 2>&1 | yad --progress \
-        --title="Waydroid" \
-        --center \
-        --width=400 \
-        --text="Copiando imagens para memória..." \
-        --auto-close \
-        --auto-kill
+        {
+            pv -n -s "$size1" "$src1" > "$dest/system.img"
+            pv -n -s "$size2" "$src2" > "$dest/vendor.img"
+        } 2>&1
+    ) | awk -v s1="$size1" -v s2="$size2" '
+    BEGIN {
+        total = s1 + s2
+        done = 0
+        file = 1
+    }
+    {
+        if ($0 !~ /^[0-9]+$/) next
+
+        if (file == 1) {
+            done = ($0/100) * s1
+            if ($0 == 100) file = 2
+        } else {
+            done = s1 + ($0/100) * s2
+        }
+
+        print int((done/total)*100)
+        fflush()
+    }
+    END {
+        print 100
+    }
+    ' | sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus yad --progress \
+            --title="Waydroid" \
+            --center \
+            --width=400 \
+            --text="Copiando imagens para memória..." \
+            --auto-close \
+            --auto-kill
 
         cd /usr/share/waydroid-extra/images/ || error=1
 
@@ -73,23 +95,36 @@ copy_userdata_to_mem() {
         exit 1
     fi
 
-    umount /home/lucas/.local/share/waydroid/data/media
+
+
+    if ! umount /home/lucas/.local/share/waydroid/data/media;
+        notify "Pasta de media ainda montado. Saindo.." critical
+        exit 1
+    fi
 
     cp -a /home/lucas/.local/share/waydroid /home/lucas/.local/share/waydroid_bkp
 
     src_size=$(du -sb /home/lucas/.local/share/waydroid | awk '{print $1}')
 
     (
-        cd /home/lucas/.local/share
+        cd /home/lucas/.local/share || exit 1
         tar cf - waydroid | pv -n -s "$src_size" | tar xf - -C /dev/shm/
-    ) 2>&1 | sudo -u lucas XDG_RUNTIME_DIR=/run/user/$(id -u lucas) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u lucas)/bus yad --progress \
-        --title="Waydroid" \
-        --center \
-        --width=400 \
-        --text="Copiando dados para a memória.." \
-        --percentage=0 \
-        --auto-close \
-        --auto-kill
+    ) 2>&1 | awk '
+    /^[0-9]+$/ {
+        print
+        last = $0
+        fflush()
+    }
+    END {
+        if (last < 100) print 100
+    }
+    ' | sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus yad --progress \
+            --title="Waydroid" \
+            --center \
+            --width=400 \
+            --text="Copiando dados para a memória..." \
+            --auto-close \
+            --auto-kill
 
     if [[ "${PIPESTATUS[2]}" -ne 0 ]]; then
         erro_msg="Erro ao copiar arquivos de /home/lucas/.local/share/waydroid para /dev/shm/waydroid."
@@ -192,16 +227,24 @@ copy_userdata_to_disk() {
     src_size=$(du -sb /dev/shm/waydroid | awk '{print $1}')
 
     (
-        cd /dev/shm
+        cd /dev/shm || exit 1
         tar cf - waydroid | pv -n -s "$src_size" | tar xf - -C /home/lucas/.local/share/
-    ) 2>&1 | sudo -u lucas XDG_RUNTIME_DIR=/run/user/$(id -u lucas) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u lucas)/bus yad --progress \
-        --title="Waydroid" \
-        --center \
-        --width=400 \
-        --text="Retornando dados para o disco.." \
-        --percentage=0 \
-        --auto-close \
-        --auto-kill
+    ) 2>&1 | awk '
+    /^[0-9]+$/ {
+        print
+        last = $0
+        fflush()
+    }
+    END {
+        if (last < 100) print 100
+    }
+    ' | sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus yad --progress \
+            --title="Waydroid" \
+            --center \
+            --width=400 \
+            --text="Retornando dados para o disco..." \
+            --auto-close \
+            --auto-kill
 
     src_count=$(find /dev/shm/waydroid -type f | wc -l)
     dst_count=$(find /home/lucas/.local/share/waydroid -type f | wc -l)
@@ -242,7 +285,7 @@ if systemctl is-active "waydroid-container.service" &> /dev/null || \
 
     pkill --cgroup=/lxc.payload.waydroid2
     pkill -9 lxc-start
-    systemctl stop waydroid-container.service
+    systemctl stop waydroid-container.service keyd.service
 
     if [ "$data_in_mem" = 'true' ]; then
         copy_userdata_to_disk
@@ -250,7 +293,7 @@ if systemctl is-active "waydroid-container.service" &> /dev/null || \
     fi
 
 else
-    choice=$(sudo -u lucas XDG_RUNTIME_DIR=/run/user/$(id -u lucas) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u lucas)/bus yad --title="Waydroid" \
+    choice=$(sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus yad --title="Waydroid" \
         --center \
         --question \
         --text="Copiar dados para a memória?" \
@@ -274,23 +317,23 @@ else
             data_in_mem=true
             ;;
 
-        2)
+        2|252)
             exit
             ;;
 
-        1|"")
+        1)
             data_in_mem=false
             ;;
     esac
 
-    systemctl restart waydroid-container.service
+    systemctl restart waydroid-container.service keyd.service
     pkill -9 adb
 
-    sudo -u lucas XDG_RUNTIME_DIR=/run/user/$(id -u lucas) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u lucas)/bus systemd-run --user --scope waydroid show-full-ui
+    sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus systemd-run --user --scope waydroid show-full-ui
 
     pkill --cgroup=/lxc.payload.waydroid2
     pkill -9 lxc-start
-    systemctl stop "waydroid-container.service"
+    systemctl stop waydroid-container.service keyd.service
 
     if [ "$data_in_mem" = 'true' ]; then
         copy_userdata_to_disk
