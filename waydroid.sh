@@ -13,53 +13,71 @@ notify() {
     fi
 }
 
+
+mem_free_space="$(df --output=avail -B1 /dev/shm | tail -n1)"
+
 copy_userdata_to_mem() {
     if [ $copy_IMGs -eq 1 ]; then
-    error=0
+        error=0
 
-    src1="/usr/share/waydroid-extra/images/system.img"
-    src2="/usr/share/waydroid-extra/images/vendor.img"
+        src1="/usr/share/waydroid-extra/images/system.img"
+        src2="/usr/share/waydroid-extra/images/vendor.img"
 
-    dest="/tmp"
+        dest="/tmp"
 
-    size1=$(stat -c%s "$src1")
-    size2=$(stat -c%s "$src2")
-    total=$((size1 + size2))
+        size1=$(stat -c%s "$src1")
+        size2=$(stat -c%s "$src2")
 
-    (
-        {
-            pv -n -s "$size1" "$src1" > "$dest/system.img"
-            pv -n -s "$size2" "$src2" > "$dest/vendor.img"
-        } 2>&1
-    ) | awk -v s1="$size1" -v s2="$size2" '
-    BEGIN {
-        total = s1 + s2
-        done = 0
-        file = 1
-    }
-    {
-        if ($0 !~ /^[0-9]+$/) next
+        if [ $((size1 + size2)) -gt $mem_free_space ]; then
+            notify "Falta de memória, não foi possível copiar as IMGs." critical
+            exit 1
+        fi
 
-        if (file == 1) {
-            done = ($0/100) * s1
-            if ($0 == 100) file = 2
-        } else {
-            done = s1 + ($0/100) * s2
+        (
+            {
+                pv -n -s "$size1" "$src1" > "$dest/system.img"
+                pv1_status=$?
+                pv -n -s "$size2" "$src2" > "$dest/vendor.img"
+                pv2_status=$?
+
+                if [[ $pv1_status -ne 0 || $pv2_status -ne 0 ]]; then
+                    exit 1
+                fi
+
+            } 2>&1
+        ) | awk -v s1="$size1" -v s2="$size2" '
+        BEGIN {
+            total = s1 + s2
+            done = 0
+            file = 1
         }
+        {
+            if ($0 !~ /^[0-9]+$/) next
 
-        print int((done/total)*100)
-        fflush()
-    }
-    END {
-        print 100
-    }
-    ' | sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus yad --progress \
-            --title="Waydroid" \
-            --center \
-            --width=400 \
-            --text="Copiando imagens para memória..." \
-            --auto-close \
-            --auto-kill
+            if (file == 1) {
+                done = ($0/100) * s1
+                if ($0 == 100) file = 2
+            } else {
+                done = s1 + ($0/100) * s2
+            }
+
+            print int((done/total)*100)
+            fflush()
+        }
+        END {
+            print 100
+        }
+        ' | sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus yad --progress \
+                --title="Waydroid" \
+                --center \
+                --width=400 \
+                --text="Copiando imagens para memória..." \
+                --auto-close \
+                --auto-kill
+
+        if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+            error=1
+        fi
 
         cd /usr/share/waydroid-extra/images/ || error=1
 
@@ -97,7 +115,7 @@ copy_userdata_to_mem() {
 
 
 
-    if ! umount /home/lucas/.local/share/waydroid/data/media;
+    if ! umount /home/lucas/.local/share/waydroid/data/media; then
         notify "Pasta de media ainda montado. Saindo.." critical
         exit 1
     fi
@@ -105,6 +123,11 @@ copy_userdata_to_mem() {
     cp -a /home/lucas/.local/share/waydroid /home/lucas/.local/share/waydroid_bkp
 
     src_size=$(du -sb /home/lucas/.local/share/waydroid | awk '{print $1}')
+
+    if [ $src_size -gt $mem_free_space ]; then
+        notify "Falta de memória, não foi possível copiar os dados do usuário. Retornar o backup manualmente." critical
+        exit 1
+    fi
 
     (
         cd /home/lucas/.local/share || exit 1
@@ -326,7 +349,9 @@ else
             ;;
     esac
 
-    systemctl restart waydroid-container.service keyd.service
+    systemctl restart keyd.service &
+    systemctl restart waydroid-container.service
+
     pkill -9 adb
 
     sudo -u lucas XDG_RUNTIME_DIR=/run/user/"$(id -u lucas)" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/"$(id -u lucas)"/bus systemd-run --user --scope waydroid show-full-ui
